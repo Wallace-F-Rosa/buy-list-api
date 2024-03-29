@@ -8,14 +8,38 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
+// CreateIngredient godoc
+// @Summary Create ingredient
+// @Description Receives post data that creates an ingredient
+// @Accepts json
+// @Produces json
+// @Sucess 200 {object} planner.Ingredient
+// @Failure 400
+// @Router /ingredient [post]
+func CreateIngredient(c *gin.Context, service *planner.IngredientService) {
+	var ingredient planner.Ingredient
+
+	err := c.BindJSON(&ingredient)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	ingredient = service.Create(ingredient.Name, ingredient.OriginType)
+
+	c.JSON(http.StatusCreated, ingredient)
+}
+
 func GetRouter(databaseConnection *gorm.DB) *gin.Engine {
-	ingredientService := planner.IngredientService{databaseConnection}
+	ingredientService := planner.IngredientService{Database: databaseConnection}
 
 	// load .env file
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -24,26 +48,25 @@ func GetRouter(databaseConnection *gorm.DB) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
+	api := router.Group("/api")
+	{
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
+		api.GET("/ping", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "pong",
+			})
 		})
-	})
 
-	router.POST("/ingredient", func(c *gin.Context) {
-		var ingredient planner.Ingredient
+		ingredient := router.Group("ingredient")
+		{
 
-		err := c.BindJSON(&ingredient)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
+			ingredient.POST("", func(c *gin.Context) {
+				CreateIngredient(c, &ingredientService)
 			})
 		}
-		ingredient = ingredientService.Create(ingredient.Name, ingredient.OriginType)
+	}
 
-		c.JSON(http.StatusCreated, ingredient)
-	})
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
 }

@@ -11,3 +11,16 @@ to follow the meal plan.
 - [ ] Manage recipes (ingredients, how to, etc...)
 - [ ] Manage meal plans (over a week, a month, etc..., register and manage a plan which recipes each day should have)
 - [ ] Based on a meal plan provide a list of ingredients needed to buy to complete the meal plan
+
+## Run project
+Install dependencies and compile:
+`go build`
+
+Generate Swagger docs:
+`swag init`
+
+To run api server:
+`go run main.go`
+
+Api is running on localhost:8080/api
+To see swagger docs go to localhost:8080/docs/index.html
