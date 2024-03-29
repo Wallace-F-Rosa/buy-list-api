@@ -8,6 +8,6 @@ to follow the meal plan.
 
 ## Goals
 - [X] Setup project
-- [] Manage recipes (ingredients, how to, etc...)
-- [] Manage meal plans (over a week, a month, etc..., register and manage a plan which recipes each day should have)
-- [] Based on a meal plan provide a list of ingredients needed to buy to complete the meal plan
+- [ ] Manage recipes (ingredients, how to, etc...)
+- [ ] Manage meal plans (over a week, a month, etc..., register and manage a plan which recipes each day should have)
+- [ ] Based on a meal plan provide a list of ingredients needed to buy to complete the meal plan
