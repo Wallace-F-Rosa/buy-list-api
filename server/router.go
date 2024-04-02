@@ -30,7 +30,11 @@ func CreateIngredient(c *gin.Context, service *planner.IngredientService) {
 			"error": err.Error(),
 		})
 	}
-	ingredient = service.Create(ingredient.Name, ingredient.OriginType)
+	ingredient, err = service.Create(ingredient.Name, ingredient.OriginType)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 
 	c.JSON(http.StatusCreated, ingredient)
 }
@@ -39,7 +43,7 @@ func GetRouter(databaseConnection *gorm.DB) *gin.Engine {
 	ingredientService := planner.IngredientService{Database: databaseConnection}
 
 	// load .env file
-	err := godotenv.Load(".env")
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -51,13 +55,7 @@ func GetRouter(databaseConnection *gorm.DB) *gin.Engine {
 	api := router.Group("/api")
 	{
 
-		api.GET("/ping", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "pong",
-			})
-		})
-
-		ingredient := router.Group("ingredient")
+		ingredient := api.Group("ingredient")
 		{
 
 			ingredient.POST("", func(c *gin.Context) {
