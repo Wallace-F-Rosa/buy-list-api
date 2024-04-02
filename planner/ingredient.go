@@ -14,8 +14,13 @@ type IngredientService struct {
 	Database *gorm.DB
 }
 
-func (service *IngredientService) Create(name string, originType string) Ingredient {
+func (service *IngredientService) Create(name string, originType string) (Ingredient, error) {
 	ingredient := Ingredient{Name: name, OriginType: originType}
-	service.Database.Create(&ingredient)
-	return ingredient
+	result := service.Database.Create(&ingredient)
+	return ingredient, result.Error
+}
+
+func (service *IngredientService) Update(ingredient Ingredient) (Ingredient, error) {
+	result := service.Database.Updates(&ingredient)
+	return ingredient, result.Error
 }
