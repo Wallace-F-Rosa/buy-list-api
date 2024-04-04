@@ -1,6 +1,8 @@
 package planner
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 )
 
@@ -20,7 +22,20 @@ func (service *IngredientService) Create(name string, originType string) (Ingred
 	return ingredient, result.Error
 }
 
-func (service *IngredientService) Update(ingredient Ingredient) (Ingredient, error) {
-	result := service.Database.Updates(&ingredient)
+func (service *IngredientService) Update(ingredient Ingredient, ID uint) (Ingredient, error) {
+	var findIngredient Ingredient
+	service.Database.First(&findIngredient, ID)
+
+	var err error
+	if findIngredient.ID == 0 {
+		err = errors.New("Ingredient does not exists")
+	}
+
+	if err != nil {
+		return ingredient, err
+	}
+
+	result := service.Database.Save(&ingredient)
+
 	return ingredient, result.Error
 }
