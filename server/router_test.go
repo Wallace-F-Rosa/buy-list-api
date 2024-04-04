@@ -47,7 +47,7 @@ func TestIngredientUpdate(t *testing.T) {
 	ingredientJson, _ := json.Marshal(ingredient)
 	jsonBody := bytes.NewBuffer(ingredientJson)
 
-	req, _ := http.NewRequest("PUT", "/ingredient/"+strconv.FormatUint(uint64(ingredient.ID), 10), jsonBody)
+	req, _ := http.NewRequest("PUT", "/api/ingredient/"+strconv.FormatUint(uint64(ingredient.ID), 10), jsonBody)
 	router.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
