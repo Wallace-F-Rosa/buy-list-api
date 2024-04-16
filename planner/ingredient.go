@@ -39,3 +39,21 @@ func (service *IngredientService) Update(ingredient Ingredient, ID uint) (Ingred
 
 	return ingredient, result.Error
 }
+
+func (service *IngredientService) Delete(ID uint) (Ingredient, error) {
+	var findIngredient Ingredient
+	service.Database.First(&findIngredient, ID)
+
+	var err error
+	if findIngredient.ID == 0 {
+		err = errors.New("Ingredient does not exists")
+	}
+
+	if err != nil {
+		return findIngredient, err
+	}
+
+	result := service.Database.Delete(&findIngredient)
+
+	return findIngredient, result.Error
+}

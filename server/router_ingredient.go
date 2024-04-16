@@ -71,7 +71,7 @@ func UpdateIngredient(c *gin.Context, service *planner.IngredientService) {
 
 // DeleteIngredient godoc
 // @Summary Update an ingredient
-// @Description Receives the identifier of ingredient and deletes it from database.
+// @Description Receives the identifier of ingredient and deletes it.
 // @Accepts json
 // @Produces json
 // @Sucess 200 {object} planner.Ingredient
@@ -79,27 +79,18 @@ func UpdateIngredient(c *gin.Context, service *planner.IngredientService) {
 // @Failure 500
 // @Router /ingredient [put]
 func DeleteIngredient(c *gin.Context, service *planner.IngredientService) {
-	var ingredient planner.Ingredient
-
-	err := c.BindJSON(&ingredient)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-	}
-
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	ingredient, err = service.Update(ingredient, uint(idNum))
+	ingredient, err := service.Delete(uint(idNum))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, ingredient)
 	}
-
-	c.JSON(http.StatusOK, ingredient)
 }
 
 func GetIngredientRoutes(group *gin.RouterGroup, db *gorm.DB) {
@@ -113,6 +104,10 @@ func GetIngredientRoutes(group *gin.RouterGroup, db *gorm.DB) {
 
 		ingredient.PUT("/:id", func(c *gin.Context) {
 			UpdateIngredient(c, &ingredientService)
+		})
+
+		ingredient.DELETE("/:id", func(c *gin.Context) {
+			DeleteIngredient(c, &ingredientService)
 		})
 	}
 }
