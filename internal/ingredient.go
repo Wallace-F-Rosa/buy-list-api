@@ -1,4 +1,4 @@
-package planner
+package internal
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 
 type Ingredient struct {
 	gorm.Model
-	Name       string
-	OriginType string // animal, plant, condiment, spice, chemical
+	Name       string `json::"name"`
+	OriginType string `json::"originType"` // animal, plant, condiment, spice, chemical
 }
 
 type IngredientService struct {
@@ -54,6 +54,29 @@ func (service *IngredientService) Delete(ID uint) (Ingredient, error) {
 	}
 
 	result := service.Database.Delete(&findIngredient)
+
+	return findIngredient, result.Error
+}
+
+func (service *IngredientService) Find() ([]Ingredient, error) {
+	findIngredient := []Ingredient{}
+	result := service.Database.Model(&Ingredient{}).Find(&findIngredient)
+
+	return findIngredient, result.Error
+}
+
+// godoc
+// Search ingredients with a name (or) and originType that is similar to param name provided.
+func (service *IngredientService) FindByParams(name string, originType string) ([]Ingredient, error) {
+	findIngredient := []Ingredient{}
+	query := service.Database.Model(&Ingredient{})
+	if name != "" {
+		query = query.Where("name like ?", "%"+name+"%")
+	}
+	if originType != "" {
+		query = query.Where("originType like ?", "%"+originType+"%")
+	}
+	result := query.Find(&findIngredient)
 
 	return findIngredient, result.Error
 }

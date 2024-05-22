@@ -1,7 +1,8 @@
 package database
 
 import (
-	"meal-planner/planner"
+	"buylist/internal"
+	"os"
 	"sync"
 
 	"gorm.io/driver/sqlite"
@@ -18,12 +19,12 @@ func GetDatabaseConnection() *gorm.DB {
 		defer lock.Unlock()
 		if instance == nil {
 			var err error
-			instance, err = gorm.Open(sqlite.Open("local.bd"), &gorm.Config{})
+			instance, err = gorm.Open(sqlite.Open(os.Getenv("SQLITE_PATH")), &gorm.Config{})
 			if err != nil {
 				panic("Failed to connect database!")
 			}
 		}
 	}
-	instance.AutoMigrate(&planner.Ingredient{})
+	instance.AutoMigrate(&internal.Ingredient{})
 	return instance
 }

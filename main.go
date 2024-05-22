@@ -1,9 +1,12 @@
 package main
 
 import (
-	_ "meal-planner/docs"
-	"meal-planner/planner/database"
-	"meal-planner/server"
+	server "buylist/api"
+	_ "buylist/docs"
+	"buylist/internal/database"
+	"log"
+
+	"github.com/joho/godotenv"
 )
 
 // @title  Meal planner API
@@ -24,6 +27,15 @@ import (
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
+
+func LoadEnv() {
+	// load .env file
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func main() {
 	db := database.GetDatabaseConnection()
 	app := server.GetRouter(db)

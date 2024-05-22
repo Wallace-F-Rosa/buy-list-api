@@ -1,4 +1,4 @@
-module meal-planner
+module buylist
 
 go 1.22.1
 

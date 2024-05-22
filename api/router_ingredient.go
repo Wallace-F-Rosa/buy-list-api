@@ -1,7 +1,7 @@
-package server
+package api
 
 import (
-	"meal-planner/planner"
+	"buylist/internal"
 	"net/http"
 	"strconv"
 
@@ -18,8 +18,8 @@ import (
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [post]
-func CreateIngredient(c *gin.Context, service *planner.IngredientService) {
-	var ingredient planner.Ingredient
+func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
+	var ingredient internal.Ingredient
 
 	err := c.BindJSON(&ingredient)
 	if err != nil {
@@ -45,8 +45,8 @@ func CreateIngredient(c *gin.Context, service *planner.IngredientService) {
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [put]
-func UpdateIngredient(c *gin.Context, service *planner.IngredientService) {
-	var ingredient planner.Ingredient
+func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
+	var ingredient internal.Ingredient
 
 	err := c.BindJSON(&ingredient)
 	if err != nil {
@@ -71,14 +71,14 @@ func UpdateIngredient(c *gin.Context, service *planner.IngredientService) {
 
 // DeleteIngredient godoc
 // @Summary Update an ingredient
-// @Description Receives the identifier of ingredient and deletes it.
+// @Description Receives the identifier of an ingredient and deletes it.
 // @Accepts json
 // @Produces json
 // @Sucess 200 {object} planner.Ingredient
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [put]
-func DeleteIngredient(c *gin.Context, service *planner.IngredientService) {
+func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -93,11 +93,35 @@ func DeleteIngredient(c *gin.Context, service *planner.IngredientService) {
 	}
 }
 
+func FindIngredient(c *gin.Context, service *internal.IngredientService) {
+	name := c.Query("name")
+	originType := c.Query("originType")
+
+	var ingredients []internal.Ingredient = nil
+	var err error = nil
+	if name != "" || originType != "" {
+		ingredients, err = service.FindByParams(name, originType)
+	} else {
+		ingredients, err = service.Find()
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ingredients)
+}
+
 func GetIngredientRoutes(group *gin.RouterGroup, db *gorm.DB) {
-	ingredientService := planner.IngredientService{Database: db}
+	ingredientService := internal.IngredientService{Database: db}
 
 	ingredient := group.Group("ingredient")
 	{
+		ingredient.GET("", func(c *gin.Context) {
+			FindIngredient(c, &ingredientService)
+		})
+
 		ingredient.POST("", func(c *gin.Context) {
 			CreateIngredient(c, &ingredientService)
 		})
