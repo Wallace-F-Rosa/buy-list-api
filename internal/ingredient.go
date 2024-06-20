@@ -65,8 +65,8 @@ func (service *IngredientService) Find() ([]Ingredient, error) {
 	return findIngredient, result.Error
 }
 
-// godoc
 // Search ingredients with a name (or) and originType that is similar to param name provided.
+// If any param is an empty string "" it will not be used.
 func (service *IngredientService) FindByParams(name string, originType string) ([]Ingredient, error) {
 	findIngredient := []Ingredient{}
 	query := service.Database.Model(&Ingredient{})
@@ -74,7 +74,7 @@ func (service *IngredientService) FindByParams(name string, originType string) (
 		query = query.Where("name like ?", "%"+name+"%")
 	}
 	if originType != "" {
-		query = query.Where("originType like ?", "%"+originType+"%")
+		query = query.Where("origin_type like ?", "%"+originType+"%")
 	}
 	result := query.Find(&findIngredient)
 
