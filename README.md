@@ -9,6 +9,7 @@ manage to show food grocery items and provide a way to manage buy list's for tho
 - [X] Setup project
 - [ ] Manage ingredients
 - [ ] Manage buy lists (each user has its own lists)
+- [ ] Authentication by tokens
 - [ ] Notify the user in date selected to use the buy list
     - [ ] email notification
     - [ ] Whatsapp notification
