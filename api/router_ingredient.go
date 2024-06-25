@@ -93,6 +93,17 @@ func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 	}
 }
 
+// FindIngredient godoc
+// @Summary Find ingredients
+// @Description Search ingredients, by default returns all ingredients on database.
+// Using query params will search for ingredients that match them.
+// @Accepts json
+// @Produces json
+// @Sucess 200 {object} planner.Ingredient
+// @Failure 500
+// @Router /ingredient [get]
+// @Param name query string false "name of ingredient"
+// @Param originType query string false "type of ingredient"
 func FindIngredient(c *gin.Context, service *internal.IngredientService) {
 	name := c.Query("name")
 	originType := c.Query("originType")

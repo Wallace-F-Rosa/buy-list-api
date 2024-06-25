@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// @title  Meal planner API
+// @title  Buy list API
 // @version 1.0
 // @description This is an web REST API made with the intent of learning Go for web backend web development.
 // @termsOfService  http://swagger.io/terms/
