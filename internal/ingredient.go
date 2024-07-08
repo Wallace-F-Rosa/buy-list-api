@@ -8,8 +8,8 @@ import (
 
 type Ingredient struct {
 	gorm.Model
-	Name       string `json::"name"`
-	OriginType string `json::"originType"` // animal, plant, condiment, spice, chemical
+	Name       string
+	OriginType string // animal, plant, condiment, spice, chemical
 }
 
 type IngredientService struct {
