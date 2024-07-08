@@ -26,5 +26,7 @@ func GetDatabaseConnection() *gorm.DB {
 		}
 	}
 	instance.AutoMigrate(&internal.Ingredient{})
+	instance.AutoMigrate(&internal.BuyList{})
+	instance.AutoMigrate(&internal.BuyItem{})
 	return instance
 }

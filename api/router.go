@@ -17,6 +17,7 @@ func GetRouter(databaseConnection *gorm.DB) *gin.Engine {
 	api := router.Group("/api")
 	{
 		GetIngredientRoutes(api, databaseConnection)
+		GetBuyListRoutes(api, databaseConnection)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
