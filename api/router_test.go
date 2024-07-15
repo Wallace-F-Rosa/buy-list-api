@@ -179,3 +179,52 @@ func TestBuyListCreate(t *testing.T) {
 		assert.Equal(t, item.Ingredient.OriginType, result.Items[i].Ingredient.OriginType)
 	}
 }
+
+func TestBuyListUpdate(t *testing.T) {
+	recorder := httptest.NewRecorder()
+
+	service := internal.BuyListService{Database: db}
+	buylist := internal.BuyList{Title: "Testing list",
+		Items: []internal.BuyItem{
+			{
+				Ingredient: internal.Ingredient{
+					Name:       "test",
+					OriginType: "condiment",
+				},
+				Quantity: 2,
+			},
+		},
+	}
+
+	buylist, _ = service.Create(buylist)
+
+	buylist.Title = "new title"
+	buylist.Items = []internal.BuyItem{
+		{
+			Ingredient: internal.Ingredient{
+				Name:       "test 2",
+				OriginType: "chemichal",
+			},
+		},
+	}
+
+	updateBuyList, _ := json.Marshal(buylist)
+	body := bytes.NewBuffer(updateBuyList)
+
+	req, _ := http.NewRequest("PUT", "/api/buylist", body)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var result internal.BuyList
+	json.Unmarshal(recorder.Body.Bytes(), &result)
+
+	assert.Equal(t, buylist.ID, result.ID)
+	assert.Equal(t, buylist.Title, result.Title)
+	assert.Equal(t, len(buylist.Items), len(result.Items))
+	for i, item := range buylist.Items {
+		assert.Equal(t, item.Quantity, result.Items[i].Quantity)
+		assert.Equal(t, item.Ingredient.Name, result.Items[i].Ingredient.Name)
+		assert.Equal(t, item.Ingredient.OriginType, result.Items[i].Ingredient.OriginType)
+	}
+}

@@ -1,6 +1,10 @@
 package internal
 
-import "gorm.io/gorm"
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type BuyItem struct {
 	gorm.Model
@@ -22,5 +26,23 @@ type BuyListService struct {
 
 func (service *BuyListService) Create(list BuyList) (BuyList, error) {
 	result := service.Database.Create(&list)
+	return list, result.Error
+}
+
+func (service *BuyListService) Update(list BuyList, ID uint) (BuyList, error) {
+	var findBuyList BuyList
+	service.Database.First(&findBuyList, ID)
+
+	var err error
+	if findBuyList.ID == 0 {
+		err = errors.New("Ingredient does not exists")
+	}
+
+	if err != nil {
+		return list, err
+	}
+
+	result := service.Database.Save(&list)
+
 	return list, result.Error
 }
