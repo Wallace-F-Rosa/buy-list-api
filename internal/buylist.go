@@ -35,7 +35,7 @@ func (service *BuyListService) Update(list BuyList, ID uint) (BuyList, error) {
 
 	var err error
 	if findBuyList.ID == 0 {
-		err = errors.New("Ingredient does not exists")
+		err = errors.New("List does not exists")
 	}
 
 	if err != nil {
