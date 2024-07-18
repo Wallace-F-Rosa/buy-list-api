@@ -3,6 +3,7 @@ package api
 import (
 	"buylist/internal"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -36,6 +37,18 @@ func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 			"error": err.Error(),
 		})
 	}
+
+	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list identifier"})
+	}
+
+	if idNum != uint64(buylist.ID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "List data and identifier doesn't match",
+		})
+	}
+
 	buylist, err = service.Update(buylist, buylist.ID)
 
 	if err != nil {
@@ -53,7 +66,7 @@ func GetBuyListRoutes(group *gin.RouterGroup, db *gorm.DB) {
 		buylist.POST("", func(c *gin.Context) {
 			CreateBuyList(c, &service)
 		})
-		buylist.PUT("", func(c *gin.Context) {
+		buylist.PUT("/:id", func(c *gin.Context) {
 			UpdateBuyList(c, &service)
 		})
 	}

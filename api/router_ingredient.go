@@ -57,7 +57,13 @@ func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredient identifier"})
+	}
+
+	if idNum != uint64(ingredient.ID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Ingredient data and identifier passed don't match",
+		})
 	}
 
 	ingredient, err = service.Update(ingredient, uint(idNum))
