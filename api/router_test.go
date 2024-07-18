@@ -205,13 +205,14 @@ func TestBuyListUpdate(t *testing.T) {
 				Name:       "test 2",
 				OriginType: "chemichal",
 			},
+			Quantity: 3,
 		},
 	}
 
 	updateBuyList, _ := json.Marshal(buylist)
 	body := bytes.NewBuffer(updateBuyList)
 
-	req, _ := http.NewRequest("PUT", "/api/buylist", body)
+	req, _ := http.NewRequest("PUT", "/api/buylist/"+strconv.FormatUint(uint64(buylist.ID), 10), body)
 	router.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -223,6 +224,39 @@ func TestBuyListUpdate(t *testing.T) {
 	assert.Equal(t, buylist.Title, result.Title)
 	assert.Equal(t, len(buylist.Items), len(result.Items))
 	for i, item := range buylist.Items {
+		assert.Equal(t, item.Quantity, result.Items[i].Quantity)
+		assert.Equal(t, item.Ingredient.Name, result.Items[i].Ingredient.Name)
+		assert.Equal(t, item.Ingredient.OriginType, result.Items[i].Ingredient.OriginType)
+	}
+}
+
+func TestBuyListDelete(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	service := internal.BuyListService{Database: db}
+	list, _ := service.Create(internal.BuyList{
+		Title: "testing",
+		Items: []internal.BuyItem{
+			{
+				Ingredient: internal.Ingredient{
+					Name:       "test",
+					OriginType: "testing",
+				},
+				Quantity: 2,
+			},
+		},
+	})
+
+	req, _ := http.NewRequest("DELETE", "/api/buylist/"+strconv.FormatUint(uint64(list.ID), 10), nil)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	var result internal.BuyList
+	json.Unmarshal(recorder.Body.Bytes(), &result)
+
+	assert.Equal(t, list.ID, result.ID)
+	assert.Equal(t, list.Title, result.Title)
+	assert.Equal(t, len(list.Items), len(result.Items))
+	for i, item := range list.Items {
 		assert.Equal(t, item.Quantity, result.Items[i].Quantity)
 		assert.Equal(t, item.Ingredient.Name, result.Items[i].Ingredient.Name)
 		assert.Equal(t, item.Ingredient.OriginType, result.Items[i].Ingredient.OriginType)
