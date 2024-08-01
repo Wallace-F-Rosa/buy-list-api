@@ -17,6 +17,7 @@ func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	buylist, err = service.Create(buylist)
 
@@ -36,20 +37,23 @@ func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list identifier"})
+		return
 	}
 
 	if idNum != uint64(buylist.ID) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "List data and identifier doesn't match",
+			"error": "List identifier doesn't match the data sent",
 		})
+		return
 	}
 
-	buylist, err = service.Update(buylist, buylist.ID)
+	buylist, err = service.Update(buylist, idNum)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -57,6 +61,28 @@ func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 	}
 
 	c.JSON(http.StatusOK, buylist)
+}
+
+func DeleteBuyList(c *gin.Context, service *internal.BuyListService) {
+
+	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid list identifier",
+		})
+		return
+	}
+
+	list, err := service.Delete(idNum)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, list)
 }
 
 func GetBuyListRoutes(group *gin.RouterGroup, db *gorm.DB) {
@@ -68,6 +94,9 @@ func GetBuyListRoutes(group *gin.RouterGroup, db *gorm.DB) {
 		})
 		buylist.PUT("/:id", func(c *gin.Context) {
 			UpdateBuyList(c, &service)
+		})
+		buylist.DELETE("/:id", func(c *gin.Context) {
+			DeleteBuyList(c, &service)
 		})
 	}
 }
