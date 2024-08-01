@@ -2,12 +2,47 @@ package api
 
 import (
 	"buylist/internal"
+	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+func GetBuyList(c *gin.Context, service *internal.BuyListService) {
+	title := c.Query("title")
+	createdAtStr := c.Query("created_at")
+
+	var createdAt sql.NullTime
+	if createdAtStr != "" {
+		createdAtDate, err := time.Parse("02/01/2006", createdAtStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid date passed on created_at parameter",
+			})
+			return
+		}
+
+		createdAt.Scan(createdAtDate)
+	}
+
+	var lists []internal.BuyList
+	var err error
+	if title != "" || createdAtStr != "" {
+		lists, err = service.FindByParams(title, createdAt)
+	} else {
+		lists, err = service.Find()
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lists)
+}
 
 func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 	var buylist internal.BuyList
@@ -89,6 +124,9 @@ func GetBuyListRoutes(group *gin.RouterGroup, db *gorm.DB) {
 	service := internal.BuyListService{Database: db}
 	buylist := group.Group("buylist")
 	{
+		buylist.GET("", func(c *gin.Context) {
+			GetBuyList(c, &service)
+		})
 		buylist.POST("", func(c *gin.Context) {
 			CreateBuyList(c, &service)
 		})

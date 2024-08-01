@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql"
 	"errors"
 
 	"gorm.io/gorm"
@@ -22,6 +23,32 @@ type BuyList struct {
 
 type BuyListService struct {
 	Database *gorm.DB
+}
+
+// Search lists with similar title to parameter title and created at the date passed
+// if title is empty string "" it will not be used
+// createdAt will not be used if date is null
+func (service *BuyListService) FindByParams(title string, createdAt sql.NullTime) ([]BuyList, error) {
+	lists := []BuyList{}
+	query := service.Database.Model(&BuyList{}).Preload("Items.Ingredient")
+	if title != "" {
+		query = query.Where("title like ?", "%"+title+"%")
+	}
+	if createdAt.Valid {
+		query = query.Where("created_at >= ?", createdAt.Time)
+		query = query.Where("created_at < ?", createdAt.Time.AddDate(0, 0, 1))
+	}
+
+	result := query.Find(&lists)
+	return lists, result.Error
+}
+
+func (service *BuyListService) Find() ([]BuyList, error) {
+	lists := []BuyList{}
+	query := service.Database.Model(&BuyList{}).Preload("Items.Ingredient")
+
+	result := query.Find(&lists)
+	return lists, result.Error
 }
 
 func (service *BuyListService) Create(list BuyList) (BuyList, error) {

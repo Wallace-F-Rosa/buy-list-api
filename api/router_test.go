@@ -9,8 +9,10 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -260,5 +262,65 @@ func TestBuyListDelete(t *testing.T) {
 		assert.Equal(t, item.Quantity, result.Items[i].Quantity)
 		assert.Equal(t, item.Ingredient.Name, result.Items[i].Ingredient.Name)
 		assert.Equal(t, item.Ingredient.OriginType, result.Items[i].Ingredient.OriginType)
+	}
+}
+
+func TestBuyListFindByParams(t *testing.T) {
+	service := internal.BuyListService{Database: db}
+	list, _ := service.Create(internal.BuyList{
+		Title: "testing",
+		Items: []internal.BuyItem{
+			{
+				Ingredient: internal.Ingredient{
+					Name:       "test",
+					OriginType: "testing",
+				},
+				Quantity: 2,
+			},
+		},
+	})
+
+	query1 := url.Values{}
+	query1.Add("title", "test")
+
+	query2 := url.Values{}
+	now := time.Now()
+	query2.Add("created_at", now.Format("02/01/2006"))
+
+	query3 := url.Values{}
+	query3.Add("title", "ing")
+	query3.Add("created_at", now.Format("02/01/2006"))
+
+	query := []url.Values{
+		query1,
+		query2,
+		query3,
+	}
+
+	for _, param := range query {
+		recorder := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/api/buylist?"+param.Encode(), nil)
+		router.ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+
+		var result []internal.BuyList
+		json.Unmarshal(recorder.Body.Bytes(), &result)
+		assert.NotEmpty(t, result)
+		resultMap := make(map[uint]internal.BuyList, len(result))
+		for _, ingredient := range result {
+			resultMap[ingredient.ID] = ingredient
+		}
+
+		value, exists := resultMap[list.ID]
+		assert.True(t, exists)
+		assert.Equal(t, list.ID, value.ID)
+		assert.Equal(t, list.Title, value.Title)
+		assert.Equal(t, len(list.Items), len(value.Items))
+		for i, item := range list.Items {
+			assert.Equal(t, item.Quantity, value.Items[i].Quantity)
+			assert.Equal(t, item.Ingredient.Name, value.Items[i].Ingredient.Name)
+			assert.Equal(t, item.Ingredient.OriginType, value.Items[i].Ingredient.OriginType)
+		}
 	}
 }
