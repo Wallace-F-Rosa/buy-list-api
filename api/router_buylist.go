@@ -12,6 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetBuyList godoc
+// @Summary Find buylists
+// @Description Search buylists, by default returns all lists on database.
+// Using query params will search for buylists that match them.
+// @Produces json
+// @Sucess 200 {array} []internal.BuyList
+// @Failure 400
+// @Failure 500
+// @Router /buylist [get]
+// @Param title query string false "buylist title"
+// @Param created_at query string false "buylist creation date in dd/mm/yyyy format"
 func GetBuyList(c *gin.Context, service *internal.BuyListService) {
 	title := c.Query("title")
 	createdAtStr := c.Query("created_at")
@@ -45,6 +56,15 @@ func GetBuyList(c *gin.Context, service *internal.BuyListService) {
 	c.JSON(http.StatusOK, lists)
 }
 
+// CreateBuyList godoc
+// @Summary Create buylist with ingredients
+// @Description Receives post data that creates a buylist
+// @Accepts json
+// @Produces json
+// @Sucess 201 {object} internal.BuyList
+// @Failure 400
+// @Failure 500
+// @Router /buylist [post]
 func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 	buyList := c.MustGet("buyList").(internal.BuyList)
 
@@ -58,6 +78,15 @@ func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 	c.JSON(http.StatusCreated, buyList)
 }
 
+// UpdateBuyList godoc
+// @Summary Update a buylist
+// @Description Receives the identifier of buylist and data to update it.
+// @Accepts json
+// @Produces json
+// @Sucess 200 {object} internal.BuyList
+// @Failure 400
+// @Failure 500
+// @Router /buylist [put]
 func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 	buyList := c.MustGet("buyList").(internal.BuyList)
 	idNum := c.MustGet("idNum").(uint64)
@@ -79,6 +108,15 @@ func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 	c.JSON(http.StatusOK, buyList)
 }
 
+// DeleteBuyList godoc
+// @Summary Deletes an buylist
+// @Description Receives the identifier of an buylist and deletes it.
+// @Accepts json
+// @Produces json
+// @Sucess 200 {object} internal.BuyList
+// @Failure 400
+// @Failure 500
+// @Router /buylist [delete]
 func DeleteBuyList(c *gin.Context, service *internal.BuyListService) {
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
