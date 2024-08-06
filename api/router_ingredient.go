@@ -14,7 +14,7 @@ import (
 // @Description Receives post data that creates an ingredient
 // @Accepts json
 // @Produces json
-// @Sucess 201 {object} planner.Ingredient
+// @Sucess 201 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [post]
@@ -34,7 +34,7 @@ func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Description Receives the identifier of ingredient and data to update it.
 // @Accepts json
 // @Produces json
-// @Sucess 200 {object} planner.Ingredient
+// @Sucess 200 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [put]
@@ -62,7 +62,7 @@ func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Description Receives the identifier of an ingredient and deletes it.
 // @Accepts json
 // @Produces json
-// @Sucess 200 {object} planner.Ingredient
+// @Sucess 200 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [delete]
@@ -82,7 +82,7 @@ func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Description Search ingredients, by default returns all ingredients on database.
 // Using query params will search for ingredients that match them.
 // @Produces json
-// @Sucess 200 {array} []planner.Ingredient
+// @Sucess 200 {array} []internal.Ingredient
 // @Failure 400
 // @Failure 500
 // @Router /ingredient [get]
