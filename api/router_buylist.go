@@ -1,6 +1,7 @@
 package api
 
 import (
+	"buylist/api/middleware"
 	"buylist/internal"
 	"database/sql"
 	"net/http"
@@ -45,61 +46,40 @@ func GetBuyList(c *gin.Context, service *internal.BuyListService) {
 }
 
 func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
-	var buylist internal.BuyList
+	buyList := c.MustGet("buyList").(internal.BuyList)
 
-	err := c.BindJSON(&buylist)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	buylist, err = service.Create(buylist)
+	buyList, err := service.Create(buyList)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, buylist)
+	c.JSON(http.StatusCreated, buyList)
 }
 
 func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
-	var buylist internal.BuyList
+	buyList := c.MustGet("buyList").(internal.BuyList)
+	idNum := c.MustGet("idNum").(uint64)
 
-	err := c.BindJSON(&buylist)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list identifier"})
-		return
-	}
-
-	if idNum != uint64(buylist.ID) {
+	if idNum != uint64(buyList.ID) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "List identifier doesn't match the data sent",
 		})
 		return
 	}
 
-	buylist, err = service.Update(buylist, idNum)
+	buyList, err := service.Update(buyList, idNum)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, buylist)
+	c.JSON(http.StatusOK, buyList)
 }
 
 func DeleteBuyList(c *gin.Context, service *internal.BuyListService) {
-
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -127,13 +107,13 @@ func GetBuyListRoutes(group *gin.RouterGroup, db *gorm.DB) {
 		buylist.GET("", func(c *gin.Context) {
 			GetBuyList(c, &service)
 		})
-		buylist.POST("", func(c *gin.Context) {
+		buylist.POST("", middleware.ValidateBuyList(), func(c *gin.Context) {
 			CreateBuyList(c, &service)
 		})
-		buylist.PUT("/:id", func(c *gin.Context) {
+		buylist.PUT("/:id", middleware.ValidateBuyList(), middleware.ValidateId(), func(c *gin.Context) {
 			UpdateBuyList(c, &service)
 		})
-		buylist.DELETE("/:id", func(c *gin.Context) {
+		buylist.DELETE("/:id", middleware.ValidateId(), func(c *gin.Context) {
 			DeleteBuyList(c, &service)
 		})
 	}
