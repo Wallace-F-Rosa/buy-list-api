@@ -324,3 +324,44 @@ func TestBuyListFindByParams(t *testing.T) {
 		}
 	}
 }
+
+func TestBuyListFind(t *testing.T) {
+	service := internal.BuyListService{Database: db}
+	list, _ := service.Create(internal.BuyList{
+		Title: "testing",
+		Items: []internal.BuyItem{
+			{
+				Ingredient: internal.Ingredient{
+					Name:       "test",
+					OriginType: "testing",
+				},
+				Quantity: 2,
+			},
+		},
+	})
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/buylist", nil)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var result []internal.BuyList
+	json.Unmarshal(recorder.Body.Bytes(), &result)
+	assert.NotEmpty(t, result)
+	resultMap := make(map[uint]internal.BuyList, len(result))
+	for _, ingredient := range result {
+		resultMap[ingredient.ID] = ingredient
+	}
+
+	value, exists := resultMap[list.ID]
+	assert.True(t, exists)
+	assert.Equal(t, list.ID, value.ID)
+	assert.Equal(t, list.Title, value.Title)
+	assert.Equal(t, len(list.Items), len(value.Items))
+	for i, item := range list.Items {
+		assert.Equal(t, item.Quantity, value.Items[i].Quantity)
+		assert.Equal(t, item.Ingredient.Name, value.Items[i].Ingredient.Name)
+		assert.Equal(t, item.Ingredient.OriginType, value.Items[i].Ingredient.OriginType)
+	}
+}
