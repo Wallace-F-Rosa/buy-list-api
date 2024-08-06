@@ -3,3 +3,4 @@ go.sum
 docs
 meal-planner.exe
 *.exe
+.env
