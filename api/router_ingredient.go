@@ -1,9 +1,9 @@
 package api
 
 import (
+	"buylist/api/middleware"
 	"buylist/internal"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -19,15 +19,8 @@ import (
 // @Failure 500
 // @Router /ingredient [post]
 func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
-	var ingredient internal.Ingredient
-
-	err := c.BindJSON(&ingredient)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-	}
-	ingredient, err = service.Create(ingredient.Name, ingredient.OriginType)
+	ingredient := c.MustGet("ingredient").(internal.Ingredient)
+	ingredient, err := service.Create(ingredient.Name, ingredient.OriginType)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -46,19 +39,8 @@ func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Failure 500
 // @Router /ingredient [put]
 func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
-	var ingredient internal.Ingredient
-
-	err := c.BindJSON(&ingredient)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-	}
-
-	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredient identifier"})
-	}
+	ingredient := c.MustGet("ingredient").(internal.Ingredient)
+	idNum := c.MustGet("idNum").(uint64)
 
 	if idNum != uint64(ingredient.ID) {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -66,7 +48,7 @@ func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 		})
 	}
 
-	ingredient, err = service.Update(ingredient, uint(idNum))
+	ingredient, err := service.Update(ingredient, uint(idNum))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -85,11 +67,7 @@ func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Failure 500
 // @Router /ingredient [put]
 func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
-	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-
+	idNum := c.MustGet("idNum").(uint64)
 	ingredient, err := service.Delete(uint(idNum))
 
 	if err != nil {
@@ -105,7 +83,7 @@ func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 // Using query params will search for ingredients that match them.
 // @Accepts json
 // @Produces json
-// @Sucess 200 {object} planner.Ingredient
+// @Sucess 200 {array} []planner.Ingredient
 // @Failure 500
 // @Router /ingredient [get]
 // @Param name query string false "name of ingredient"
@@ -139,15 +117,15 @@ func GetIngredientRoutes(group *gin.RouterGroup, db *gorm.DB) {
 			FindIngredient(c, &ingredientService)
 		})
 
-		ingredient.POST("", func(c *gin.Context) {
+		ingredient.POST("", middleware.ValidateIngredient(), func(c *gin.Context) {
 			CreateIngredient(c, &ingredientService)
 		})
 
-		ingredient.PUT("/:id", func(c *gin.Context) {
+		ingredient.PUT("/:id", middleware.ValidateIngredient(), middleware.ValidateId(), func(c *gin.Context) {
 			UpdateIngredient(c, &ingredientService)
 		})
 
-		ingredient.DELETE("/:id", func(c *gin.Context) {
+		ingredient.DELETE("/:id", middleware.ValidateId(), func(c *gin.Context) {
 			DeleteIngredient(c, &ingredientService)
 		})
 	}
