@@ -2,6 +2,7 @@ package main
 
 import (
 	server "buylist/api"
+	"buylist/api/auth"
 	_ "buylist/docs"
 	"buylist/internal/database"
 	"log"
@@ -39,7 +40,11 @@ func LoadEnv() {
 func main() {
 	LoadEnv()
 	db := database.GetDatabaseConnection()
-	app := server.GetRouter(db)
+	auth, err := auth.New()
+	if err != nil {
+		panic("Error setting up Authenticathor")
+	}
+	app := server.GetRouter(db, auth)
 
 	app.Run() // run on default port 8080
 }
