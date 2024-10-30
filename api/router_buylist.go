@@ -20,7 +20,7 @@ import (
 // @Sucess 200 {array} []internal.BuyList
 // @Failure 400
 // @Failure 500
-// @Router /buylist [get]
+// @Router /api/buylist [get]
 // @Param title query string false "buylist title"
 // @Param created_at query string false "buylist creation date in dd/mm/yyyy format"
 func GetBuyList(c *gin.Context, service *internal.BuyListService) {
@@ -64,7 +64,7 @@ func GetBuyList(c *gin.Context, service *internal.BuyListService) {
 // @Sucess 201 {object} internal.BuyList
 // @Failure 400
 // @Failure 500
-// @Router /buylist [post]
+// @Router /api/buylist [post]
 func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 	buyList := c.MustGet("buyList").(internal.BuyList)
 
@@ -86,7 +86,7 @@ func CreateBuyList(c *gin.Context, service *internal.BuyListService) {
 // @Sucess 200 {object} internal.BuyList
 // @Failure 400
 // @Failure 500
-// @Router /buylist [put]
+// @Router /api/buylist [put]
 func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 	buyList := c.MustGet("buyList").(internal.BuyList)
 	idNum := c.MustGet("idNum").(uint64)
@@ -116,7 +116,7 @@ func UpdateBuyList(c *gin.Context, service *internal.BuyListService) {
 // @Sucess 200 {object} internal.BuyList
 // @Failure 400
 // @Failure 500
-// @Router /buylist [delete]
+// @Router /api/buylist [delete]
 func DeleteBuyList(c *gin.Context, service *internal.BuyListService) {
 	idNum, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {

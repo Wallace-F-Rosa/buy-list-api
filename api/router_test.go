@@ -1,6 +1,7 @@
 package api
 
 import (
+	"buylist/api/auth"
 	"buylist/internal"
 	"buylist/internal/database"
 	"bytes"
@@ -31,7 +32,8 @@ func LoadEnv() {
 func setup() (*gin.Engine, *httptest.ResponseRecorder, *gorm.DB) {
 	LoadEnv()
 	db := database.GetDatabaseConnection()
-	router := GetRouter(db)
+	auth, _ := auth.New()
+	router := GetRouter(db, auth)
 	recorder := httptest.NewRecorder()
 	return router, recorder, db
 }

@@ -17,7 +17,7 @@ import (
 // @Sucess 201 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
-// @Router /ingredient [post]
+// @Router /api/ingredient [post]
 func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
 	ingredient := c.MustGet("ingredient").(internal.Ingredient)
 	ingredient, err := service.Create(ingredient.Name, ingredient.OriginType)
@@ -37,7 +37,7 @@ func CreateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Sucess 200 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
-// @Router /ingredient [put]
+// @Router /api/ingredient [put]
 func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 	ingredient := c.MustGet("ingredient").(internal.Ingredient)
 	idNum := c.MustGet("idNum").(uint64)
@@ -65,7 +65,7 @@ func UpdateIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Sucess 200 {object} internal.Ingredient
 // @Failure 400
 // @Failure 500
-// @Router /ingredient [delete]
+// @Router /api/ingredient [delete]
 func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 	idNum := c.MustGet("idNum").(uint64)
 	ingredient, err := service.Delete(uint(idNum))
@@ -85,7 +85,7 @@ func DeleteIngredient(c *gin.Context, service *internal.IngredientService) {
 // @Sucess 200 {array} []internal.Ingredient
 // @Failure 400
 // @Failure 500
-// @Router /ingredient [get]
+// @Router /api/ingredient [get]
 // @Param name query string false "name of ingredient"
 // @Param originType query string false "type of ingredient"
 func FindIngredient(c *gin.Context, service *internal.IngredientService) {
