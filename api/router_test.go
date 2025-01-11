@@ -7,11 +7,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -98,6 +101,9 @@ func TestIngredientFind(t *testing.T) {
 	ingredient, _ := service.Create("test find", "testing")
 
 	req, _ := http.NewRequest("GET", "/api/ingredient", nil)
+	token := getTestJwtToken()
+	bearerHeader := fmt.Sprintf("Bearer %s", token.AcessToken)
+	req.Header.Add("Authorization", bearerHeader)
 	router.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -366,4 +372,29 @@ func TestBuyListFind(t *testing.T) {
 		assert.Equal(t, item.Ingredient.Name, value.Items[i].Ingredient.Name)
 		assert.Equal(t, item.Ingredient.OriginType, value.Items[i].Ingredient.OriginType)
 	}
+}
+
+func getTestJwtToken() auth.Auth0JwtToken {
+	issuerUrl, err := url.Parse(os.Getenv(("AUTH0_DOMAIN")))
+	if err != nil {
+		log.Fatalf("Failed to parse issuer url %v", err)
+	}
+
+	issuerUrl = issuerUrl.JoinPath("/oauth").JoinPath("/token")
+	clientId := os.Getenv("AUTH0_CLIENT_ID")
+	clientSecret := os.Getenv("AUTH0_CLIENT_SECRET")
+	audienceUrl := os.Getenv("AUTH0_AUDIENCE")
+	grantType := "client_credentials"
+
+	payload := strings.NewReader(fmt.Sprintf("{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"audience\":\"%s\",\"grant_type\":\"%s\"}", clientId, clientSecret, audienceUrl, grantType))
+
+	req, _ := http.Post(issuerUrl.String(), "application/json", payload)
+
+	result := auth.Auth0JwtToken{}
+	if req.StatusCode != http.StatusOK {
+		panic("Can't get Auth0 test token")
+	}
+	body, _ := io.ReadAll(req.Body)
+	json.Unmarshal(body, &result)
+	return result
 }
