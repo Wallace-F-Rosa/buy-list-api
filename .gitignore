@@ -4,3 +4,4 @@ docs
 meal-planner.exe
 *.exe
 .env
+tmp
