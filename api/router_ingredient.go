@@ -1,11 +1,13 @@
 package api
 
 import (
+	"buylist/api/auth"
 	"buylist/api/middleware"
 	"buylist/internal"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	adapter "github.com/gwatts/gin-adapter"
 	"gorm.io/gorm"
 )
 
@@ -113,6 +115,7 @@ func GetIngredientRoutes(group *gin.RouterGroup, db *gorm.DB) {
 
 	ingredient := group.Group("ingredient")
 	{
+		ingredient.Use(adapter.Wrap(auth.EnsureValidToken()))
 		ingredient.GET("", func(c *gin.Context) {
 			FindIngredient(c, &ingredientService)
 		})
