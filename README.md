@@ -1,4 +1,4 @@
-# BuyList
+# BuyList API
 This is an web REST API made with the intent of learning Go for web backend web development.
 Web framework used is [Gin](https://gin-gonic.com/).
 The goal of this application is to manage food buylists. The API provided should be able to
@@ -7,9 +7,10 @@ manage to show food grocery items and provide a way to manage buy list's for tho
 
 ## Goals
 - [X] Setup project
-- [ ] Manage ingredients
-- [ ] Manage buy lists (each user has its own lists)
+- [x] Manage ingredients
+- [x] Manage buy lists
 - [ ] Authentication by tokens
+- [ ] Make buylists be visible only to users that created them
 - [ ] Notify the user in date selected to use the buy list
     - [ ] email notification
     - [ ] Whatsapp notification
