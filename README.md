@@ -1,29 +1,30 @@
 # BuyList API
-This is an web REST API made with the intent of learning Go for web backend web development.
-Web framework used is [Gin](https://gin-gonic.com/).
-The goal of this application is to manage food buylists. The API provided should be able to
-manage to show food grocery items and provide a way to manage buy list's for those items.
+This is an web REST API made with the intent of learning Spring boot for web backend web development.
+Web framework used is [Spring boot](https://spring.io/projects/spring-boot).
+The goal of this application is to manage groceries buylists. The API provided should be able to manage grocery items and provide a way to manage buy list's that contain these items.
 
 
 ## Goals
-- [X] Setup project
-- [x] Manage ingredients
-- [x] Manage buy lists
-- [ ] Authentication by tokens
+- [-] Setup project
+- [ ] Manage ingredients
+- [ ] Manage buy lists
+- [ ] Authentication by jwt
 - [ ] Make buylists be visible only to users that created them
+
+Notification service
 - [ ] Notify the user in date selected to use the buy list
     - [ ] email notification
     - [ ] Whatsapp notification
 
 ## Run project
 Install dependencies and compile:
-`go build`
+TODO: set command
 
 Generate Swagger docs:
-`swag init`
+TODO: set command
 
-To run api server:
-`go run main.go`
+To run application:
+TODO: set command
 
 Api is running on localhost:8080/api
-To see swagger docs go to localhost:8080/docs/index.html
+To see swagger docs go to localhost:8080/docs
