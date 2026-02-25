@@ -17,7 +17,7 @@ public class ValidationExceptionHandler {
                 .collect(Collectors.toList());
         ValidationErrorResponse errorResponse = new ValidationErrorResponse(
                 "VALIDATION_ERROR",
-                "Validation failed for ingredient data.",
+                "Validation failed.",
                 errors);
         return ResponseEntity.badRequest().body(errorResponse);
     }
