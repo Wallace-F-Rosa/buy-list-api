@@ -27,7 +27,7 @@ public class IngredientsControllerIntegrationTest {
     @Autowired
     private IngredientsRepository ingredientsRepository;
 
-    private IngredientsEntity testIngredient;
+    private Ingredient testIngredient;
 
     @BeforeEach
     public void setUp() {
@@ -35,7 +35,7 @@ public class IngredientsControllerIntegrationTest {
         ingredientsRepository.deleteAll();
 
         // Create test ingredient
-        testIngredient = new IngredientsEntity();
+        testIngredient = new Ingredient();
         testIngredient.setName("Tomato");
         testIngredient.setStoreSection("Produce");
         testIngredient.setUnitOfMeasure("kg");
@@ -58,7 +58,7 @@ public class IngredientsControllerIntegrationTest {
 
     @Test
     public void testCreateIngredient_ValidationError() throws Exception {
-        IngredientsEntity invalidIngredient = new IngredientsEntity();
+        Ingredient invalidIngredient = new Ingredient();
         invalidIngredient.setName(""); // Empty name should fail validation
         invalidIngredient.setStoreSection("Produce");
         invalidIngredient.setUnitOfMeasure("kg");
@@ -78,7 +78,7 @@ public class IngredientsControllerIntegrationTest {
     public void testGetAllIngredients() throws Exception {
         ingredientsRepository.save(testIngredient);
 
-        IngredientsEntity ingredient2 = new IngredientsEntity();
+        Ingredient ingredient2 = new Ingredient();
         ingredient2.setName("Potato");
         ingredient2.setStoreSection("Produce");
         ingredient2.setUnitOfMeasure("kg");
@@ -96,7 +96,7 @@ public class IngredientsControllerIntegrationTest {
 
     @Test
     public void testGetIngredientById_Success() throws Exception {
-        IngredientsEntity saved = ingredientsRepository.save(testIngredient);
+        Ingredient saved = ingredientsRepository.save(testIngredient);
 
         mockMvc.perform(get("/api/ingredient/" + saved.getId())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -115,9 +115,9 @@ public class IngredientsControllerIntegrationTest {
 
     @Test
     public void testUpdateIngredient_Success() throws Exception {
-        IngredientsEntity saved = ingredientsRepository.save(testIngredient);
+        Ingredient saved = ingredientsRepository.save(testIngredient);
 
-        IngredientsEntity updatedIngredient = new IngredientsEntity();
+        Ingredient updatedIngredient = new Ingredient();
         updatedIngredient.setName("Updated Tomato");
         updatedIngredient.setStoreSection("Produce");
         updatedIngredient.setUnitOfMeasure("g");
@@ -136,7 +136,7 @@ public class IngredientsControllerIntegrationTest {
 
     @Test
     public void testUpdateIngredient_NotFound() throws Exception {
-        IngredientsEntity updatedIngredient = new IngredientsEntity();
+        Ingredient updatedIngredient = new Ingredient();
         updatedIngredient.setName("Updated Tomato");
         updatedIngredient.setStoreSection("Produce");
         updatedIngredient.setUnitOfMeasure("kg");
@@ -151,7 +151,7 @@ public class IngredientsControllerIntegrationTest {
 
     @Test
     public void testDeleteIngredient_Success() throws Exception {
-        IngredientsEntity saved = ingredientsRepository.save(testIngredient);
+        Ingredient saved = ingredientsRepository.save(testIngredient);
 
         mockMvc.perform(delete("/api/ingredient/" + saved.getId()))
                 .andExpect(status().isNoContent());
@@ -184,7 +184,7 @@ public class IngredientsControllerIntegrationTest {
     public void testGetByFields_ByStoreSection() throws Exception {
         ingredientsRepository.save(testIngredient);
 
-        IngredientsEntity ingredient2 = new IngredientsEntity();
+        Ingredient ingredient2 = new Ingredient();
         ingredient2.setName("Milk");
         ingredient2.setStoreSection("Dairy");
         ingredient2.setUnitOfMeasure("liter");
@@ -204,7 +204,7 @@ public class IngredientsControllerIntegrationTest {
     public void testGetByFields_ByNameAndStoreSection() throws Exception {
         ingredientsRepository.save(testIngredient);
 
-        IngredientsEntity ingredient2 = new IngredientsEntity();
+        Ingredient ingredient2 = new Ingredient();
         ingredient2.setName("Tomato");
         ingredient2.setStoreSection("Canned");
         ingredient2.setUnitOfMeasure("unit");
@@ -226,7 +226,7 @@ public class IngredientsControllerIntegrationTest {
     public void testGetByFields_NoParameters() throws Exception {
         ingredientsRepository.save(testIngredient);
 
-        IngredientsEntity ingredient2 = new IngredientsEntity();
+        Ingredient ingredient2 = new Ingredient();
         ingredient2.setName("Potato");
         ingredient2.setStoreSection("Produce");
         ingredient2.setUnitOfMeasure("kg");

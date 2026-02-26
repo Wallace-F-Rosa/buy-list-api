@@ -25,25 +25,25 @@ public class IngredientsController {
 
     // Create
     @PostMapping("")
-    public ResponseEntity<IngredientsEntity> createIngredient(@Validated @RequestBody IngredientsEntity ingredient) {
-        IngredientsEntity saved = ingredientsService.createIngredient(ingredient);
+    public ResponseEntity<Ingredient> createIngredient(@Validated @RequestBody Ingredient ingredient) {
+        Ingredient saved = ingredientsService.createIngredient(ingredient);
         return ResponseEntity.ok(saved);
     }
 
     // Read by id
     @GetMapping("/{id}")
-    public ResponseEntity<IngredientsEntity> getIngredientById(@PathVariable("id") Long id) {
-        Optional<IngredientsEntity> found = ingredientsService.getIngredientById(id);
+    public ResponseEntity<Ingredient> getIngredientById(@PathVariable("id") Long id) {
+        Optional<Ingredient> found = ingredientsService.getIngredientById(id);
         return found.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Update
     @PutMapping("/{id}")
     public ResponseEntity<?> updateIngredient(@PathVariable("id") Long id,
-            @Validated @RequestBody IngredientsEntity ingredient) {
+            @Validated @RequestBody Ingredient ingredient) {
         return ingredientsService.getIngredientById(id)
                 .map(existing -> {
-                    IngredientsEntity updated = ingredientsService.updateIngredient(id, ingredient);
+                    Ingredient updated = ingredientsService.updateIngredient(id, ingredient);
                     return ResponseEntity.ok(updated);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -62,10 +62,10 @@ public class IngredientsController {
 
     // Unified search endpoint using query parameters
     @GetMapping("")
-    public ResponseEntity<List<IngredientsEntity>> getByFields(
+    public ResponseEntity<List<Ingredient>> getByFields(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "storeSection", required = false) String storeSection) {
-        List<IngredientsEntity> results = ingredientsService.search(name, storeSection);
+        List<Ingredient> results = ingredientsService.search(name, storeSection);
         return ResponseEntity.ok(results);
     }
 }

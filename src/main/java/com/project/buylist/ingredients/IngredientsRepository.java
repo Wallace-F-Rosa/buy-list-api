@@ -8,13 +8,13 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IngredientsRepository
-        extends JpaRepository<IngredientsEntity, Long>, JpaSpecificationExecutor<IngredientsEntity> {
+        extends JpaRepository<Ingredient, Long>, JpaSpecificationExecutor<Ingredient> {
     // Find by name
-    IngredientsEntity findByName(String name);
+    Ingredient findByName(String name);
 
     // Find all by store section
-    List<IngredientsEntity> findAllByStoreSection(String storeSection);
+    List<Ingredient> findAllByStoreSection(String storeSection);
 
     // Find by name and store section
-    IngredientsEntity findByNameAndStoreSection(String name, String storeSection);
+    Ingredient findByNameAndStoreSection(String name, String storeSection);
 }

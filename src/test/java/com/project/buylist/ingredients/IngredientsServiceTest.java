@@ -30,12 +30,12 @@ class IngredientsServiceTest {
 
     @Test
     void createIngredient_delegatesToRepository() {
-        IngredientsEntity ingredient = new IngredientsEntity();
+        Ingredient ingredient = new Ingredient();
         ingredient.setName("Test");
 
         when(repository.save(ingredient)).thenReturn(ingredient);
 
-        IngredientsEntity result = service.createIngredient(ingredient);
+        Ingredient result = service.createIngredient(ingredient);
 
         assertThat(result).isSameAs(ingredient);
         verify(repository).save(ingredient);
@@ -43,19 +43,19 @@ class IngredientsServiceTest {
 
     @Test
     void getIngredientById_returnsOptional() {
-        IngredientsEntity ingredient = new IngredientsEntity();
+        Ingredient ingredient = new Ingredient();
         when(repository.findById(1L)).thenReturn(Optional.of(ingredient));
 
-        Optional<IngredientsEntity> result = service.getIngredientById(1L);
+        Optional<Ingredient> result = service.getIngredientById(1L);
         assertThat(result).isPresent().contains(ingredient);
     }
 
     @Test
     void updateIngredient_setsIdAndSaves() {
-        IngredientsEntity ingredient = new IngredientsEntity();
+        Ingredient ingredient = new Ingredient();
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        IngredientsEntity updated = service.updateIngredient(5L, ingredient);
+        Ingredient updated = service.updateIngredient(5L, ingredient);
         assertThat(updated.getId()).isEqualTo(5L);
         verify(repository).save(ingredient);
     }
@@ -74,24 +74,24 @@ class IngredientsServiceTest {
 
     @Test
     void search_withNoCriteria_returnAll() {
-        List<IngredientsEntity> all = Arrays.asList(new IngredientsEntity());
+        List<Ingredient> all = Arrays.asList(new Ingredient());
         when(repository.findAll()).thenReturn(all);
-        List<IngredientsEntity> result = service.search(null, null);
+        List<Ingredient> result = service.search(null, null);
         assertThat(result).isSameAs(all);
     }
 
     @Test
     void search_withName_buildsSpecification() {
-        IngredientsEntity ing = new IngredientsEntity();
-        List<IngredientsEntity> all = Arrays.asList(ing);
+        Ingredient ing = new Ingredient();
+        List<Ingredient> all = Arrays.asList(ing);
         when(repository.findAll(any(Specification.class))).thenReturn(all);
 
-        List<IngredientsEntity> result = service.search("foo", null);
+        List<Ingredient> result = service.search("foo", null);
         assertThat(result).isSameAs(all);
         // verify that spec passed contains the name predicate by capturing
-        ArgumentCaptor<Specification<IngredientsEntity>> captor = ArgumentCaptor.forClass(Specification.class);
+        ArgumentCaptor<Specification<Ingredient>> captor = ArgumentCaptor.forClass(Specification.class);
         verify(repository).findAll(captor.capture());
-        Specification<IngredientsEntity> spec = captor.getValue();
+        Specification<Ingredient> spec = captor.getValue();
         assertThat(spec).isNotNull();
     }
 }

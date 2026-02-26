@@ -21,15 +21,15 @@ public class IngredientsService {
         this.ingredientsRepository = ingredientsRepository;
     }
 
-    public IngredientsEntity createIngredient(IngredientsEntity ingredient) {
+    public Ingredient createIngredient(Ingredient ingredient) {
         return ingredientsRepository.save(ingredient);
     }
 
-    public Optional<IngredientsEntity> getIngredientById(Long id) {
+    public Optional<Ingredient> getIngredientById(Long id) {
         return ingredientsRepository.findById(id);
     }
 
-    public IngredientsEntity updateIngredient(Long id, IngredientsEntity ingredient) {
+    public Ingredient updateIngredient(Long id, Ingredient ingredient) {
         // ensure the id is set; caller should have verified existence
         ingredient.setId(id);
         return ingredientsRepository.save(ingredient);
@@ -43,8 +43,8 @@ public class IngredientsService {
         ingredientsRepository.deleteById(id);
     }
 
-    public List<IngredientsEntity> search(String name, String storeSection) {
-        Specification<IngredientsEntity> spec = null;
+    public List<Ingredient> search(String name, String storeSection) {
+        Specification<Ingredient> spec = null;
         if (name != null) {
             spec = Objects.isNull(spec) ? IngredientsSpecifications.hasName(name)
                     : spec.and(IngredientsSpecifications.hasName(name));
