@@ -2,96 +2,129 @@ package com.project.buylist.ingredients;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.jpa.domain.Specification;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
 class IngredientsServiceTest {
 
-    @Mock
+    @Autowired
     private IngredientsRepository repository;
 
-    @InjectMocks
+    @Autowired
     private IngredientsService service;
 
     @BeforeEach
     void setup() {
-        MockitoAnnotations.openMocks(this);
+        repository.deleteAll();
     }
 
     @Test
-    void createIngredient_delegatesToRepository() {
+    void createIngredient_savesAndReturnsEntity() {
         Ingredient ingredient = new Ingredient();
         ingredient.setName("Test");
-
-        when(repository.save(ingredient)).thenReturn(ingredient);
+        ingredient.setStoreSection("Test Section");
+        ingredient.setUnitOfMeasure("t");
 
         Ingredient result = service.createIngredient(ingredient);
 
-        assertThat(result).isSameAs(ingredient);
-        verify(repository).save(ingredient);
+        assertThat(result.getId()).isNotNull();
+        assertThat(repository.findById(result.getId())).isPresent().contains(result);
     }
 
     @Test
-    void getIngredientById_returnsOptional() {
+    void getIngredientById_returnsSavedEntity() {
         Ingredient ingredient = new Ingredient();
-        when(repository.findById(1L)).thenReturn(Optional.of(ingredient));
+        ingredient.setName("Foo");
+        ingredient.setStoreSection("S1");
+        ingredient.setUnitOfMeasure("u");
+        ingredient = repository.save(ingredient);
 
-        Optional<Ingredient> result = service.getIngredientById(1L);
+        Optional<Ingredient> result = service.getIngredientById(ingredient.getId());
         assertThat(result).isPresent().contains(ingredient);
     }
 
     @Test
-    void updateIngredient_setsIdAndSaves() {
+    void updateIngredient_setsIdAndPersistsChanges() {
+        Ingredient original = new Ingredient();
+        original.setName("Old");
+        original.setStoreSection("Sx");
+        original.setUnitOfMeasure("ux");
+        original = repository.save(original);
+
+        Ingredient update = new Ingredient();
+        update.setName("New");
+        // keep other required properties so validation passes
+        update.setStoreSection(original.getStoreSection());
+        update.setUnitOfMeasure(original.getUnitOfMeasure());
+
+        Ingredient updated = service.updateIngredient(original.getId(), update);
+        assertThat(updated.getId()).isEqualTo(original.getId());
+        assertThat(updated.getName()).isEqualTo("New");
+
+        assertThat(repository.findById(original.getId())).isPresent().contains(updated);
+    }
+
+    @Test
+    void existsById_reflectsRepositoryState() {
         Ingredient ingredient = new Ingredient();
-        when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        ingredient.setName("X");
+        ingredient.setStoreSection("SX");
+        ingredient.setUnitOfMeasure("ux");
+        ingredient = repository.save(ingredient);
 
-        Ingredient updated = service.updateIngredient(5L, ingredient);
-        assertThat(updated.getId()).isEqualTo(5L);
-        verify(repository).save(ingredient);
+        assertThat(service.existsById(ingredient.getId())).isTrue();
+        assertThat(service.existsById(ingredient.getId() + 1)).isFalse();
     }
 
     @Test
-    void existsById_delegates() {
-        when(repository.existsById(10L)).thenReturn(true);
-        assertThat(service.existsById(10L)).isTrue();
+    void deleteIngredient_removesEntity() {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName("Y");
+        ingredient.setStoreSection("SY");
+        ingredient.setUnitOfMeasure("uy");
+        ingredient = repository.save(ingredient);
+
+        service.deleteIngredient(ingredient.getId());
+        assertThat(repository.findById(ingredient.getId())).isEmpty();
     }
 
     @Test
-    void deleteIngredient_delegates() {
-        service.deleteIngredient(3L);
-        verify(repository).deleteById(3L);
-    }
+    void search_withNoCriteria_returnsAllIngredients() {
+        Ingredient a = new Ingredient();
+        a.setName("A");
+        a.setStoreSection("SA");
+        a.setUnitOfMeasure("ua");
+        Ingredient b = new Ingredient();
+        b.setName("B");
+        b.setStoreSection("SB");
+        b.setUnitOfMeasure("ub");
+        repository.saveAll(Arrays.asList(a, b));
 
-    @Test
-    void search_withNoCriteria_returnAll() {
-        List<Ingredient> all = Arrays.asList(new Ingredient());
-        when(repository.findAll()).thenReturn(all);
         List<Ingredient> result = service.search(null, null);
-        assertThat(result).isSameAs(all);
+        assertThat(result).hasSize(2).extracting(Ingredient::getName).containsExactlyInAnyOrder("A", "B");
     }
 
     @Test
-    void search_withName_buildsSpecification() {
-        Ingredient ing = new Ingredient();
-        List<Ingredient> all = Arrays.asList(ing);
-        when(repository.findAll(any(Specification.class))).thenReturn(all);
+    void search_withName_filtersByName() {
+        Ingredient match = new Ingredient();
+        match.setName("foo");
+        match.setStoreSection("S");
+        match.setUnitOfMeasure("u");
+        Ingredient other = new Ingredient();
+        other.setName("bar");
+        other.setStoreSection("S");
+        other.setUnitOfMeasure("u");
+        repository.saveAll(Arrays.asList(match, other));
 
         List<Ingredient> result = service.search("foo", null);
-        assertThat(result).isSameAs(all);
-        // verify that spec passed contains the name predicate by capturing
-        ArgumentCaptor<Specification<Ingredient>> captor = ArgumentCaptor.forClass(Specification.class);
-        verify(repository).findAll(captor.capture());
-        Specification<Ingredient> spec = captor.getValue();
-        assertThat(spec).isNotNull();
+        assertThat(result).hasSize(1).contains(match);
     }
 }
