@@ -1,6 +1,9 @@
 package com.project.buylist.ingredients;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.autoconfigure.web.DataWebProperties.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,11 +68,19 @@ public class IngredientsController {
     }
 
     // Unified search endpoint using query parameters
-    @GetMapping("")
-    public ResponseEntity<List<Ingredient>> getByFields(
+    @GetMapping("/search")
+    public ResponseEntity<Page<Ingredient>> search(
             @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "storeSection", required = false) String storeSection) {
-        List<Ingredient> results = ingredientsService.search(name, storeSection);
+            @RequestParam(name = "storeSection", required = false) String storeSection,
+            @RequestParam(name = "page", required = true, defaultValue = "0") int page,
+            @RequestParam(name = "page_size", required = true, defaultValue = "10") @Min(value = 1, message = "page_size must be a positive integer") @Max(value = 100, message = "page_size must be between 1 and 100") int pageSize) {
+        IngredientsFilterDto filterDto = IngredientsFilterDto.builder()
+                .name(name)
+                .storeSection(storeSection)
+                .page(page)
+                .pageSize(pageSize)
+                .build();
+        Page<Ingredient> results = ingredientsService.search(filterDto);
         return ResponseEntity.ok(results);
     }
 }

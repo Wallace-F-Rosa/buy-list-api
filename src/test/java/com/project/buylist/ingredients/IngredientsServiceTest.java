@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -108,8 +109,14 @@ class IngredientsServiceTest {
         b.setUnitOfMeasure("ub");
         repository.saveAll(Arrays.asList(a, b));
 
-        List<Ingredient> result = service.search(null, null);
-        assertThat(result).hasSize(2).extracting(Ingredient::getName).containsExactlyInAnyOrder("A", "B");
+        IngredientsFilterDto filterDto = IngredientsFilterDto.builder()
+                .name(null)
+                .storeSection(null)
+                .page(null)
+                .pageSize(null)
+                .build();
+        Page<Ingredient> result = service.search(filterDto);
+        assertThat(result.getContent()).hasSize(2).extracting(Ingredient::getName).containsExactlyInAnyOrder("A", "B");
     }
 
     @Test
@@ -124,7 +131,13 @@ class IngredientsServiceTest {
         other.setUnitOfMeasure("u");
         repository.saveAll(Arrays.asList(match, other));
 
-        List<Ingredient> result = service.search("foo", null);
-        assertThat(result).hasSize(1).contains(match);
+        IngredientsFilterDto filterDto = IngredientsFilterDto.builder()
+                .name("foo")
+                .storeSection(null)
+                .page(null)
+                .pageSize(null)
+                .build();
+        Page<Ingredient> result = service.search(filterDto);
+        assertThat(result.getContent()).hasSize(1).contains(match);
     }
 }
