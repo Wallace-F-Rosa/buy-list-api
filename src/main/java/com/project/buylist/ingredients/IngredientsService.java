@@ -3,17 +3,10 @@ package com.project.buylist.ingredients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
-import org.springframework.data.domain.jaxb.SpringDataJaxb.SortDto;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
