@@ -14,5 +14,8 @@ spring:
       path: /h2
       settings:
         web-allow-others: true
-
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${auth0_issuer_uri}
