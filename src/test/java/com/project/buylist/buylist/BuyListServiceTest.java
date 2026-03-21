@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.project.buylist.ingredients.Ingredient;
 import com.project.buylist.ingredients.IngredientsRepository;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
+@ActiveProfiles("test")
 class BuyListServiceTest {
 
     @Autowired
@@ -98,29 +100,30 @@ class BuyListServiceTest {
 
     @Test
     void search_withCreatedRange_buildsSpec() {
-        LocalDateTime from = LocalDateTime.of(2025, 1, 1, 0, 0);
-        LocalDateTime to = LocalDateTime.of(2025, 3, 31, 23, 59, 59, 999_999_999);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = now.minusDays(1);
+        LocalDateTime to = now.plusDays(1);
         List<BuyList> all = Arrays.asList(createBuyListWithItem("A"));
-        all.get(0).setCreatedAt(LocalDateTime.of(2025, 2, 15, 12, 0));
         service.save(all.get(0));
         BuyListFilterDto filter = BuyListFilterDto.builder().createdFrom(from).createdTo(to).build();
         Page<BuyList> result = service.search(filter);
         assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
-                .isSameAs(all);
+                .isEqualTo(all);
     }
 
     @Test
     void search_withUpdatedRange_buildsSpec() {
-
-        LocalDateTime from = LocalDateTime.of(2026, 1, 1, 0, 0);
-        LocalDateTime to = LocalDateTime.of(2026, 3, 31, 23, 59, 59, 999_999_999);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = now.minusDays(1);
+        LocalDateTime to = now.plusDays(1);
         List<BuyList> all = Arrays.asList(createBuyListWithItem("A"));
-        all.get(0).setUpdatedAt(LocalDateTime.of(2026, 2, 15, 12, 0));
-        service.save(all.get(0));
+        BuyList saved = service.save(all.get(0));
+        saved.setName("Updated");
+        service.save(saved);
         BuyListFilterDto filter = BuyListFilterDto.builder().updatedFrom(from).updatedTo(to).build();
         Page<BuyList> result = service.search(filter);
         assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
-                .isSameAs(all);
+                .isEqualTo(all);
     }
 
     private BuyList createBuyListWithItem(String name) {
