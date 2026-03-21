@@ -24,6 +24,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-json")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	runtimeOnly("com.h2database:h2")
 	providedRuntime("org.springframework.boot:spring-boot-starter-tomcat-runtime")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
