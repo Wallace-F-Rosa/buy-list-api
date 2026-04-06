@@ -1,18 +1,14 @@
 package com.project.buylist.core.security;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class JwtAuthorization {
+
+    @Autowired
+    private JwtNonProdConfig JwtNonProdConfig;
 
     @Bean
     @Profile("prod")
@@ -48,8 +47,8 @@ public class JwtAuthorization {
     @Bean
     @Profile("!prod")
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec(JwtNonProdConfig.INSTANCE.JWT_SECRET.getBytes(), 0,
-                JwtNonProdConfig.INSTANCE.JWT_SECRET.getBytes().length,
+        SecretKeySpec secretKey = new SecretKeySpec(JwtNonProdConfig.getJwtSecret().getBytes(), 0,
+                JwtNonProdConfig.getJwtSecret().getBytes().length,
                 "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }

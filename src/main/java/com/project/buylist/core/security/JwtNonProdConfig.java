@@ -8,7 +8,9 @@ import org.springframework.context.annotation.Profile;
 @Profile("!prod")
 public class JwtNonProdConfig {
     @Value("${spring.security.oauth2.jwt-secret}")
-    public String JWT_SECRET;
+    public String jwtSecret;
 
-    public static final JwtNonProdConfig INSTANCE = new JwtNonProdConfig();
+    public String getJwtSecret() {
+        return jwtSecret;
+    }
 }
