@@ -1,4 +1,0 @@
-spring:
-  security:
-    oauth2:
-      jwt-secret: ${TEST_JWT_SECRET}

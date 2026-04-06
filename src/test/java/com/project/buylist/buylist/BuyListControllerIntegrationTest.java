@@ -1,28 +1,37 @@
 package com.project.buylist.buylist;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import tools.jackson.databind.ObjectMapper;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.buylist.ingredients.Ingredient;
 import com.project.buylist.ingredients.IngredientsRepository;
-
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase
+@ActiveProfiles("test")
+@Import(TestConfig.class)
 public class BuyListControllerIntegrationTest {
 
     @Autowired
@@ -51,16 +60,25 @@ public class BuyListControllerIntegrationTest {
         String json = objectMapper.writeValueAsString(sample);
         String response = mockMvc.perform(post("/api/buylist")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(SecurityMockMvcRequestPostProcessors.jwt()
+                        .jwt(jwt -> jwt.subject("test-user").claim("roles", Arrays.asList("ROLE_USER"))))
                 .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Weekly"))
+                .andExpect(jsonPath("$.userId").value("test-user"))
                 .andReturn().getResponse().getContentAsString();
+    }
 
-        BuyList created = objectMapper.readValue(response, BuyList.class);
-        mockMvc.perform(get("/api/buylist/" + created.getId()))
+    @Test
+    void testGetById() throws Exception {
+        BuyList saved = repository.save(sample);
+        mockMvc.perform(get("/api/buylist/" + saved.getId())
+                .with(SecurityMockMvcRequestPostProcessors.jwt()
+                        .jwt(jwt -> jwt.subject("test-user").claim("roles", Arrays.asList("ROLE_USER")))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(created.getId()))
-                .andExpect(jsonPath("$.name").value("Weekly"));
+                .andExpect(jsonPath("$.id").value(saved.getId()))
+                .andExpect(jsonPath("$.name").value("Weekly"))
+                .andExpect(jsonPath("$.userId").value("test-user"));
     }
 
     @Test

@@ -16,6 +16,7 @@ spring:
         web-allow-others: true
   security:
     oauth2:
+      jwt-secret: ${SPRING_SECURITY_OAUTH2_JWT_SECRET:dev-secret-key}  # Add this line
       resourceserver:
         jwt:
           issuer-uri: ${auth0_issuer_uri}

@@ -1,0 +1,4 @@
+spring:
+  security:
+    oauth2:
+      jwt-secret: test-secret-key-for-testing-purposes-only-1234567890
