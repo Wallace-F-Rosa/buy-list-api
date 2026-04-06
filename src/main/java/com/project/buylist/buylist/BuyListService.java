@@ -19,19 +19,20 @@ public class BuyListService {
         this.repository = repository;
     }
 
-    public BuyList save(BuyList buyList) {
+    public BuyList save(BuyList buyList, String userId) {
+        buyList.setUserId(userId);
         for (BuyListItem item : buyList.getItems()) {
             item.setBuyList(buyList);
         }
         return repository.save(buyList);
     }
 
-    public Optional<BuyList> getById(Long id) {
-        return repository.findById(id);
+    public Optional<BuyList> getById(Long id, String userId) {
+        return repository.findByIdAndUserId(id, userId);
     }
 
-    public boolean existsById(Long id) {
-        return repository.existsById(id);
+    public boolean existsById(Long id, String userId) {
+        return repository.existsByIdAndUserId(id, userId);
     }
 
     public void delete(Long id) {
@@ -59,6 +60,10 @@ public class BuyListService {
         if (filter.getUpdatedTo() != null) {
             spec = Objects.isNull(spec) ? BuyListSpecifications.updatedAtBefore(filter.getUpdatedTo())
                     : spec.and(BuyListSpecifications.updatedAtBefore(filter.getUpdatedTo()));
+        }
+        if (filter.getUserId() != null) {
+            spec = Objects.isNull(spec) ? BuyListSpecifications.hasUserId(filter.getUserId())
+                    : spec.and(BuyListSpecifications.hasUserId(filter.getUserId()));
         }
         PageRequest pageRequest = PageRequest.of(
                 filter.getPage() != null ? filter.getPage() : 0,

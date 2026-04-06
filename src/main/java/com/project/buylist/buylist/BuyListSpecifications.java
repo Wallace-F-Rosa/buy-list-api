@@ -32,4 +32,8 @@ public class BuyListSpecifications {
     public static Specification<BuyList> updatedAtBefore(LocalDateTime to) {
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("updatedAt"), to);
     }
+
+    public static Specification<BuyList> hasUserId(String userId) {
+        return (root, query, cb) -> userId == null ? null : cb.equal(root.get("userId"), userId);
+    }
 }

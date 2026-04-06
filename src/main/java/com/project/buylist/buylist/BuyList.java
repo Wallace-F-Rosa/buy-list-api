@@ -37,6 +37,8 @@ public class BuyList {
 
     private LocalDateTime updatedAt;
 
+    private String userId;
+
     @Size(min = 1, message = "List of items must contain at least one item")
     @OneToMany(mappedBy = "buyList", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<BuyListItem> items;

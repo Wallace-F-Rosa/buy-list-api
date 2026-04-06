@@ -17,4 +17,5 @@ public class BuyListFilterDto {
     private Integer pageSize;
     private String sortBy;
     private String sortDirection;
+    private String userId;
 }
