@@ -1,10 +1,13 @@
 package com.project.buylist.buylist;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.project.buylist.ingredients.Ingredient;
 import com.project.buylist.ingredients.IngredientsRepository;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @AutoConfigureTestDatabase
 @ActiveProfiles("test")
 class BuyListServiceTest {
@@ -39,23 +42,27 @@ class BuyListServiceTest {
     @Test
     void create_delegatesToRepository() {
         BuyList bl = createBuyListWithItem("List1");
-        BuyList result = service.save(bl);
+        BuyList result = service.save(bl, "test-user");
         assertThat(result).isSameAs(bl);
     }
 
     @Test
     void getById_returnsOptional() {
         BuyList bl = createBuyListWithItem("List2");
-        BuyList result = service.save(bl);
-        assertThat(result).isSameAs(bl);
+        repository.save(bl);
+        Optional<BuyList> result = service.getById(bl.getId(), "test-user");
+        assertThat(result).isPresent();
+        assertThat(result.get())
+                .usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+                .isEqualTo(bl);
     }
 
     @Test
     void update_setsNameAndSaves() {
         BuyList bl = createBuyListWithItem("Updated");
-        service.save(bl);
+        service.save(bl, "test-user");
         bl.setName("Updated Name");
-        BuyList updated = service.save(bl);
+        BuyList updated = service.save(bl, "test-user");
 
         assertThat(updated.getName()).isEqualTo("Updated Name");
     }
@@ -63,16 +70,17 @@ class BuyListServiceTest {
     @Test
     void existsById_delegates() {
         BuyList bl = createBuyListWithItem("Exists");
-        service.save(bl);
-        assertThat(service.existsById(bl.getId())).isTrue();
+        service.save(bl, "test-user");
+        assertThat(service.existsById(bl.getId(), "test-user")).isTrue();
+        assertThat(service.existsById(bl.getId(), "test-user1")).isFalse();
     }
 
     @Test
     void delete_delegates() {
         BuyList bl = createBuyListWithItem("Exists");
-        service.save(bl);
+        service.save(bl, "test-user");
         service.delete(bl.getId());
-        assertThat(service.existsById(bl.getId())).isFalse();
+        assertThat(service.existsById(bl.getId(), "test-user")).isFalse();
     }
 
     @Test
@@ -80,8 +88,8 @@ class BuyListServiceTest {
         List<BuyList> all = Arrays.asList(createBuyListWithItem("A"), createBuyListWithItem("B"));
         all.get(0).setCreatedAt(LocalDateTime.now());
         all.get(1).setCreatedAt(LocalDateTime.now().plusSeconds(1));
-        service.save(all.get(0));
-        service.save(all.get(1));
+        service.save(all.get(0), "test-user");
+        service.save(all.get(1), "test-user");
         Page<BuyList> result = service.search(BuyListFilterDto.builder().build());
         assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
                 .isEqualTo(all);
@@ -90,7 +98,7 @@ class BuyListServiceTest {
     @Test
     void search_withName_buildsSpec() {
         List<BuyList> all = Arrays.asList(createBuyListWithItem("foo"));
-        service.save(all.get(0));
+        service.save(all.get(0), "test-user");
 
         BuyListFilterDto filter = BuyListFilterDto.builder().name("foo").build();
         Page<BuyList> result = service.search(filter);
@@ -104,7 +112,7 @@ class BuyListServiceTest {
         LocalDateTime from = now.minusDays(1);
         LocalDateTime to = now.plusDays(1);
         List<BuyList> all = Arrays.asList(createBuyListWithItem("A"));
-        service.save(all.get(0));
+        service.save(all.get(0), "test-user");
         BuyListFilterDto filter = BuyListFilterDto.builder().createdFrom(from).createdTo(to).build();
         Page<BuyList> result = service.search(filter);
         assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
@@ -117,9 +125,9 @@ class BuyListServiceTest {
         LocalDateTime from = now.minusDays(1);
         LocalDateTime to = now.plusDays(1);
         List<BuyList> all = Arrays.asList(createBuyListWithItem("A"));
-        BuyList saved = service.save(all.get(0));
+        BuyList saved = service.save(all.get(0), "test-user");
         saved.setName("Updated");
-        service.save(saved);
+        service.save(saved, "test-user");
         BuyListFilterDto filter = BuyListFilterDto.builder().updatedFrom(from).updatedTo(to).build();
         Page<BuyList> result = service.search(filter);
         assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
@@ -133,7 +141,7 @@ class BuyListServiceTest {
         ingredient.setUnitOfMeasure("kg");
         ingredient = ingredientsRepository.save(ingredient);
 
-        BuyList bl = BuyList.builder().name(name).build();
+        BuyList bl = BuyList.builder().name(name).userId("test-user").build();
 
         BuyListItem item = new BuyListItem();
         item.setQuantity(1.0);
