@@ -46,18 +46,22 @@ public class BuyListService {
                     : spec.and(BuyListSpecifications.hasName(filter.getName()));
         }
         if (filter.getCreatedFrom() != null) {
+            filter.setCreatedFrom(filter.getCreatedFrom().withNano(0));
             spec = Objects.isNull(spec) ? BuyListSpecifications.createdAtAfter(filter.getCreatedFrom())
                     : spec.and(BuyListSpecifications.createdAtAfter(filter.getCreatedFrom()));
         }
         if (filter.getCreatedTo() != null) {
+            filter.setCreatedTo(filter.getCreatedTo().withNano(999_999_999));
             spec = Objects.isNull(spec) ? BuyListSpecifications.createdAtBefore(filter.getCreatedTo())
                     : spec.and(BuyListSpecifications.createdAtBefore(filter.getCreatedTo()));
         }
         if (filter.getUpdatedFrom() != null) {
+            filter.setUpdatedFrom(filter.getUpdatedFrom().withNano(0));
             spec = Objects.isNull(spec) ? BuyListSpecifications.updatedAtAfter(filter.getUpdatedFrom())
                     : spec.and(BuyListSpecifications.updatedAtAfter(filter.getUpdatedFrom()));
         }
         if (filter.getUpdatedTo() != null) {
+            filter.setUpdatedTo(filter.getUpdatedTo().withNano(999_999_999));
             spec = Objects.isNull(spec) ? BuyListSpecifications.updatedAtBefore(filter.getUpdatedTo())
                     : spec.and(BuyListSpecifications.updatedAtBefore(filter.getUpdatedTo()));
         }
