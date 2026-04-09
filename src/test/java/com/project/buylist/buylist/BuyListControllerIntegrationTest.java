@@ -1,6 +1,7 @@
 package com.project.buylist.buylist;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +21,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,6 +50,11 @@ public class BuyListControllerIntegrationTest {
 
     private BuyList sample;
 
+    private JwtRequestPostProcessor jwt(String userId, String... roles) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(jwt -> jwt.subject(userId).claim("buylist/roles", Arrays.asList(roles)));
+    }
+
     @BeforeEach
     public void setUp() {
         repository.deleteAll();
@@ -56,12 +63,11 @@ public class BuyListControllerIntegrationTest {
     }
 
     @Test
-    public void testCreateAndGetById() throws Exception {
+    public void testCreate() throws Exception {
         String json = objectMapper.writeValueAsString(sample);
-        String response = mockMvc.perform(post("/api/buylist")
+        mockMvc.perform(post("/api/buylist")
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(jwt -> jwt.subject("test-user").claim("roles", Arrays.asList("ROLE_USER"))))
+                .with(jwt("test-user", "ROLE_USER"))
                 .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Weekly"))
@@ -70,15 +76,39 @@ public class BuyListControllerIntegrationTest {
     }
 
     @Test
-    void testGetById() throws Exception {
+    void testCreate_unauthorized() throws Exception {
+        String json = objectMapper.writeValueAsString(sample);
+        mockMvc.perform(post("/api/buylist")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testGetById_success() throws Exception {
         BuyList saved = repository.save(sample);
         mockMvc.perform(get("/api/buylist/" + saved.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(jwt -> jwt.subject("test-user").claim("roles", Arrays.asList("ROLE_USER")))))
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
                 .andExpect(jsonPath("$.name").value("Weekly"))
                 .andExpect(jsonPath("$.userId").value("test-user"));
+    }
+
+    @Test
+    void testGetById_unauthorized() throws Exception {
+        BuyList saved = repository.save(sample);
+        mockMvc.perform(get("/api/buylist/" + saved.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testGetById_notFound() throws Exception {
+        sample.setUserId("test-user2");
+        BuyList saved = repository.save(sample);
+        mockMvc.perform(get("/api/buylist/" + saved.getId())
+                .with(jwt("test-user", "ROLE_USER")))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -87,6 +117,7 @@ public class BuyListControllerIntegrationTest {
         saved.setName("Monthly");
         String json = objectMapper.writeValueAsString(saved);
         mockMvc.perform(put("/api/buylist/" + saved.getId())
+                .with(jwt("test-user", "ROLE_USER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk())
@@ -94,12 +125,49 @@ public class BuyListControllerIntegrationTest {
     }
 
     @Test
+    public void testUpdate_notFound() throws Exception {
+        sample.setId(9999L);
+        String json = objectMapper.writeValueAsString(sample);
+        mockMvc.perform(put("/api/buylist/" + sample.getId())
+                .with(jwt("test-user", "ROLE_USER"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testUpdate_unauthorized() throws Exception {
+        BuyList saved = repository.save(sample);
+        saved.setName("Monthly");
+        String json = objectMapper.writeValueAsString(saved);
+        mockMvc.perform(put("/api/buylist/" + saved.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     public void testDelete() throws Exception {
         BuyList saved = repository.save(sample);
-        mockMvc.perform(delete("/api/buylist/" + saved.getId()))
+        mockMvc.perform(delete("/api/buylist/" + saved.getId())
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isNoContent());
-        mockMvc.perform(get("/api/buylist/" + saved.getId()))
+        BuyList deleted = repository.findById(saved.getId()).orElse(null);
+        assertNull(deleted);
+    }
+
+    @Test
+    public void testDelete_notFound() throws Exception {
+        mockMvc.perform(delete("/api/buylist/9999")
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDelete_unauthorized() throws Exception {
+        BuyList saved = repository.save(sample);
+        mockMvc.perform(delete("/api/buylist/" + saved.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -109,7 +177,8 @@ public class BuyListControllerIntegrationTest {
         other.setName("Other");
         repository.save(other);
 
-        mockMvc.perform(get("/api/buylist").param("name", "Weekly"))
+        mockMvc.perform(get("/api/buylist").param("name", "Weekly")
+                .with(jwt("test-user", "USER_ROLE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -118,10 +187,18 @@ public class BuyListControllerIntegrationTest {
         // also test createdAt range
         String from = sample.getCreatedAt().toString();
         String to = sample.getCreatedAt().toString();
-        mockMvc.perform(get("/api/buylist").param("createdFrom", from).param("createdTo", to))
+        mockMvc.perform(get("/api/buylist").param("createdFrom", from).param("createdTo", to)
+                .with(jwt("test-user", "USER_ROLE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(2)));
+    }
+
+    @Test
+    public void testSearchByName_unauthorized() throws Exception {
+        repository.save(sample);
+        mockMvc.perform(get("/api/buylist").param("name", "Weekly"))
+                .andExpect(status().isUnauthorized());
     }
 
     private BuyList createSampleBuyList() {
@@ -131,7 +208,8 @@ public class BuyListControllerIntegrationTest {
         ingredient.setUnitOfMeasure("L");
         ingredient = ingredientsRepository.save(ingredient);
 
-        BuyList bl = BuyList.builder().name("Weekly").createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+        BuyList bl = BuyList.builder().name("Weekly").userId("test-user").createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         BuyListItem item = new BuyListItem();
