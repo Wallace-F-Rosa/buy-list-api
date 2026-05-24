@@ -1,5 +1,19 @@
 package com.project.buylist.ingredients;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,13 +21,11 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
-
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,6 +42,11 @@ public class IngredientsControllerIntegrationTest {
     private IngredientsRepository ingredientsRepository;
 
     private Ingredient testIngredient;
+
+    private JwtRequestPostProcessor jwt(String userId, String... roles) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(jwt -> jwt.subject(userId).claim("buylist/roles", Arrays.asList(roles)));
+    }
 
     @BeforeEach
     public void setUp() {
@@ -50,6 +67,7 @@ public class IngredientsControllerIntegrationTest {
 
         mockMvc.perform(post("/api/ingredient")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER"))
                 .content(ingredientJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Tomato"))
@@ -69,6 +87,7 @@ public class IngredientsControllerIntegrationTest {
 
         mockMvc.perform(post("/api/ingredient")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER"))
                 .content(ingredientJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
@@ -88,12 +107,13 @@ public class IngredientsControllerIntegrationTest {
         ingredientsRepository.save(ingredient2);
 
         mockMvc.perform(get("/api/ingredient")
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-                .andExpect(jsonPath("$[0].name", anyOf(is("Tomato"), is("Potato"))))
-                .andExpect(jsonPath("$[1].name", anyOf(is("Tomato"), is("Potato"))));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(2))))
+                .andExpect(jsonPath("$.content[0].name", anyOf(is("Tomato"), is("Potato"))))
+                .andExpect(jsonPath("$.content[1].name", anyOf(is("Tomato"), is("Potato"))));
     }
 
     @Test
@@ -101,7 +121,8 @@ public class IngredientsControllerIntegrationTest {
         Ingredient saved = ingredientsRepository.save(testIngredient);
 
         mockMvc.perform(get("/api/ingredient/" + saved.getId())
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
                 .andExpect(jsonPath("$.name").value("Tomato"))
@@ -111,6 +132,7 @@ public class IngredientsControllerIntegrationTest {
     @Test
     public void testGetIngredientById_NotFound() throws Exception {
         mockMvc.perform(get("/api/ingredient/9999")
+                .with(jwt("test-user", "ROLE_USER"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -129,6 +151,7 @@ public class IngredientsControllerIntegrationTest {
 
         mockMvc.perform(put("/api/ingredient/" + saved.getId())
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER"))
                 .content(ingredientJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Tomato"))
@@ -147,6 +170,7 @@ public class IngredientsControllerIntegrationTest {
 
         mockMvc.perform(put("/api/ingredient/9999")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt("test-user", "ROLE_USER"))
                 .content(ingredientJson))
                 .andExpect(status().isNotFound());
     }
@@ -155,17 +179,20 @@ public class IngredientsControllerIntegrationTest {
     public void testDeleteIngredient_Success() throws Exception {
         Ingredient saved = ingredientsRepository.save(testIngredient);
 
-        mockMvc.perform(delete("/api/ingredient/" + saved.getId()))
+        mockMvc.perform(delete("/api/ingredient/" + saved.getId())
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isNoContent());
 
         // Verify it's deleted
-        mockMvc.perform(get("/api/ingredient/" + saved.getId()))
+        mockMvc.perform(get("/api/ingredient/" + saved.getId())
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void testDeleteIngredient_NotFound() throws Exception {
-        mockMvc.perform(delete("/api/ingredient/9999"))
+        mockMvc.perform(delete("/api/ingredient/9999")
+                .with(jwt("test-user", "ROLE_USER")))
                 .andExpect(status().isNotFound());
     }
 
@@ -174,12 +201,13 @@ public class IngredientsControllerIntegrationTest {
         ingredientsRepository.save(testIngredient);
 
         mockMvc.perform(get("/api/ingredient")
+                .with(jwt("test-user", "ROLE_USER"))
                 .param("name", "Tomato")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name").value("Tomato"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].name").value("Tomato"));
     }
 
     @Test
@@ -195,11 +223,12 @@ public class IngredientsControllerIntegrationTest {
 
         mockMvc.perform(get("/api/ingredient")
                 .param("storeSection", "Produce")
+                .with(jwt("test-user", "ROLE_USER"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].storeSection").value("Produce"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].storeSection").value("Produce"));
     }
 
     @Test
@@ -216,12 +245,13 @@ public class IngredientsControllerIntegrationTest {
         mockMvc.perform(get("/api/ingredient")
                 .param("name", "Tomato")
                 .param("storeSection", "Produce")
+                .with(jwt("test-user", "ROLE_USER"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name").value("Tomato"))
-                .andExpect(jsonPath("$[0].storeSection").value("Produce"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].name").value("Tomato"))
+                .andExpect(jsonPath("$.content[0].storeSection").value("Produce"));
     }
 
     @Test
@@ -236,9 +266,10 @@ public class IngredientsControllerIntegrationTest {
         ingredientsRepository.save(ingredient2);
 
         mockMvc.perform(get("/api/ingredient")
+                .with(jwt("test-user", "ROLE_USER"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(2)));
     }
 }
