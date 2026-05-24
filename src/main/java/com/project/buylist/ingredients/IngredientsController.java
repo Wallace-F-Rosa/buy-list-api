@@ -63,7 +63,7 @@ public class IngredientsController {
     }
 
     // Unified search endpoint using query parameters
-    @GetMapping("/search")
+    @GetMapping("")
     public ResponseEntity<Page<Ingredient>> search(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "storeSection", required = false) String storeSection,
