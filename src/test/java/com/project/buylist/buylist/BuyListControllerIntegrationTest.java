@@ -184,6 +184,14 @@ public class BuyListControllerIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].name").value("Weekly"));
 
+        // other user should not be able to see this user's buy lists even if name
+        // matches
+        mockMvc.perform(get("/api/buylist").param("name", "Weekly")
+                .with(jwt("test-user-2", "USER_ROLE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(0)));
+
         // also test createdAt range
         String from = sample.getCreatedAt().toString();
         String to = sample.getCreatedAt().toString();
@@ -192,6 +200,16 @@ public class BuyListControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(2)));
+
+        // other user should not be able to see this user's buy lists even if createdAt
+        // matches
+        from = sample.getCreatedAt().toString();
+        to = sample.getCreatedAt().toString();
+        mockMvc.perform(get("/api/buylist").param("createdFrom", from).param("createdTo", to)
+                .with(jwt("test-user-2", "USER_ROLE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     @Test
