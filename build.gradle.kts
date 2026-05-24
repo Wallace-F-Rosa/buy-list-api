@@ -1,8 +1,8 @@
 plugins {
 	java
 	war
-	id("org.springframework.boot") version "4.0.2"
-	id("io.spring.dependency-management") version "1.1.7"
+	id("org.springframework.boot") version "3.2.5"
+	id("io.spring.dependency-management") version "1.1.5"
 }
 
 group = "com.project"
@@ -19,17 +19,18 @@ repositories {
 	mavenCentral()
 }
 
+val springBootVersion = "3.2.5"
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
-	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-json")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+	implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+	implementation("org.springframework.boot:spring-boot-starter-validation:$springBootVersion")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
+	implementation("org.springframework.boot:spring-boot-starter-json:$springBootVersion")
+	implementation("org.springframework.boot:spring-boot-starter-security:$springBootVersion")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server:$springBootVersion")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 	runtimeOnly("com.h2database:h2")
-	providedRuntime("org.springframework.boot:spring-boot-starter-tomcat-runtime")
-	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+	providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
 	implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
