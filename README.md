@@ -9,8 +9,8 @@ The goal of this application is to manage groceries buylists. The API provided s
  - [] Swagger docs
 - [x] Manage ingredients
 - [x] Manage buy lists
-- [-] Authentication by jwt
-- [ ] Make buylists be visible only to users that created them
+- [x] Authentication by jwt
+- [x] Make buylists be visible only to users that created them
 
 Notification service
 - [ ] Notify the user in date selected to use the buy list
