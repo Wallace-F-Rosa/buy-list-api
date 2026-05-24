@@ -18,16 +18,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/buylist")
+@Tag(name = "Buy List API", description = "API for managing buy lists")
 public class BuyListController {
 
     @Autowired
     private BuyListService service;
 
     @PostMapping("")
+    @Operation(summary = "Create a new buy list", description = "Creates a new buy list for the authenticated user", security = {
+            @SecurityRequirement(name = "bearer-key") })
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Buy list created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+
     public ResponseEntity<BuyList> create(@Validated @RequestBody BuyList buyList, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         BuyList saved = service.save(buyList, userId);
@@ -35,6 +50,7 @@ public class BuyListController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get buy list by ID", description = "Retrieves a buy list by its ID for the authenticated user")
     public ResponseEntity<BuyList> getById(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         return service.getById(id, userId).map(ResponseEntity::ok)
@@ -42,6 +58,7 @@ public class BuyListController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update buy list", description = "Updates existing buy list by ID (user authenticated)")
     public ResponseEntity<?> update(@PathVariable("id") Long id,
             @Validated @RequestBody BuyList buyList, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
@@ -55,6 +72,7 @@ public class BuyListController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete buy list", description = "Deletes a buy list by its ID (user authenticated)")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         if (service.getById(id, userId).isPresent()) {
@@ -66,6 +84,7 @@ public class BuyListController {
     }
 
     @GetMapping("")
+    @Operation(summary = "Search buy lists", description = "Searches for buy lists based on specified criteria. Only returns buy lists created by the authenticated user.")
     public ResponseEntity<Page<BuyList>> search(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "createdFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdFrom,

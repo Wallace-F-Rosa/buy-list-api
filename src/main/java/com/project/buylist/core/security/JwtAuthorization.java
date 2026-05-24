@@ -25,8 +25,10 @@ public class JwtAuthorization {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csfr -> csfr.disable())
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/docs/**")
-                        .permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(
+                        authorize -> authorize
+                                .requestMatchers("/favicon.ico")
+                                .permitAll().anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
     }
@@ -37,8 +39,11 @@ public class JwtAuthorization {
             throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/docs/**")
-                        .permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(
+                        authorize -> authorize
+                                .requestMatchers("/swagger-ui.html", "/swagger-ui/**",
+                                        "/webjars/**", "/v3/api-docs/**", "/v3/api-docs", "/favicon.ico")
+                                .permitAll().anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
 
         return http.build();
