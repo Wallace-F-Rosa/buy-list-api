@@ -5,10 +5,11 @@ The goal of this application is to manage groceries buylists. The API provided s
 
 
 ## Goals
-- [-] Setup project
-- [ ] Manage ingredients
-- [ ] Manage buy lists
-- [ ] Authentication by jwt
+- [x] Setup project
+ - [] Swagger docs
+- [x] Manage ingredients
+- [x] Manage buy lists
+- [-] Authentication by jwt
 - [ ] Make buylists be visible only to users that created them
 
 Notification service
@@ -18,7 +19,7 @@ Notification service
 
 ## Run project
 Install dependencies and compile:
-TODO: set command
+.\gradlew bootRun
 
 Generate Swagger docs:
 TODO: set command
