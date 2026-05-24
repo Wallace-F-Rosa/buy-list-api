@@ -1,9 +1,9 @@
 package com.project.buylist.buylist;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +43,7 @@ class BuyListServiceTest {
     void create_delegatesToRepository() {
         BuyList bl = createBuyListWithItem("List1");
         BuyList result = service.save(bl, "test-user");
-        assertThat(result).isSameAs(bl);
+        assertThat(result).isEqualTo(bl);
     }
 
     @Test
@@ -53,18 +53,27 @@ class BuyListServiceTest {
         Optional<BuyList> result = service.getById(bl.getId(), "test-user");
         assertThat(result).isPresent();
         assertThat(result.get())
-                .usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+                .usingRecursiveComparison()
+                .withComparatorForType(
+                        (d1, d2) -> d1.truncatedTo(ChronoUnit.MILLIS).equals(d2.truncatedTo(ChronoUnit.MILLIS)) ? 0 : 1,
+                        LocalDateTime.class)
                 .isEqualTo(bl);
     }
 
     @Test
     void update_setsNameAndSaves() {
         BuyList bl = createBuyListWithItem("Updated");
-        service.save(bl, "test-user");
+        bl = service.save(bl, "test-user");
         bl.setName("Updated Name");
         BuyList updated = service.save(bl, "test-user");
 
         assertThat(updated.getName()).isEqualTo("Updated Name");
+        assertThat(updated.getUpdatedAt()).isNotNull();
+        assertThat(updated.getUpdatedAt()).isNotEqualTo(bl.getUpdatedAt());
+        assertThat(updated)
+                .usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes("(^|.*\\.)updatedAt$")
+                .isEqualTo(bl);
     }
 
     @Test
@@ -91,7 +100,10 @@ class BuyListServiceTest {
         service.save(all.get(0), "test-user");
         service.save(all.get(1), "test-user");
         Page<BuyList> result = service.search(BuyListFilterDto.builder().build());
-        assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+        assertThat(result.getContent()).usingRecursiveComparison()
+                .withComparatorForType(
+                        (d1, d2) -> d1.truncatedTo(ChronoUnit.MILLIS).equals(d2.truncatedTo(ChronoUnit.MILLIS)) ? 0 : 1,
+                        LocalDateTime.class)
                 .isEqualTo(all);
     }
 
@@ -102,7 +114,10 @@ class BuyListServiceTest {
 
         BuyListFilterDto filter = BuyListFilterDto.builder().name("foo").build();
         Page<BuyList> result = service.search(filter);
-        assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+        assertThat(result.getContent()).usingRecursiveComparison()
+                .withComparatorForType(
+                        (d1, d2) -> d1.truncatedTo(ChronoUnit.MILLIS).equals(d2.truncatedTo(ChronoUnit.MILLIS)) ? 0 : 1,
+                        LocalDateTime.class)
                 .isEqualTo(all);
     }
 
@@ -115,7 +130,10 @@ class BuyListServiceTest {
         service.save(all.get(0), "test-user");
         BuyListFilterDto filter = BuyListFilterDto.builder().createdFrom(from).createdTo(to).build();
         Page<BuyList> result = service.search(filter);
-        assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+        assertThat(result.getContent()).usingRecursiveComparison()
+                .withComparatorForType(
+                        (d1, d2) -> d1.truncatedTo(ChronoUnit.MILLIS).equals(d2.truncatedTo(ChronoUnit.MILLIS)) ? 0 : 1,
+                        LocalDateTime.class)
                 .isEqualTo(all);
     }
 
@@ -130,7 +148,11 @@ class BuyListServiceTest {
         service.save(saved, "test-user");
         BuyListFilterDto filter = BuyListFilterDto.builder().updatedFrom(from).updatedTo(to).build();
         Page<BuyList> result = service.search(filter);
-        assertThat(result.getContent()).usingRecursiveComparison().ignoringFields("createdAt", "updatedAt")
+        assertThat(result.getContent()).usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes("(^|.*\\.)updatedAt$")
+                .withComparatorForType(
+                        (d1, d2) -> d1.truncatedTo(ChronoUnit.MILLIS).equals(d2.truncatedTo(ChronoUnit.MILLIS)) ? 0 : 1,
+                        LocalDateTime.class)
                 .isEqualTo(all);
     }
 
