@@ -40,7 +40,7 @@ public class BuyListController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Buy list created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
 
     public ResponseEntity<BuyList> create(@Validated @RequestBody BuyList buyList, @AuthenticationPrincipal Jwt jwt) {
@@ -51,6 +51,11 @@ public class BuyListController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get buy list by ID", description = "Retrieves a buy list by its ID for the authenticated user")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Buylist retrieved sucessfully"),
+            @ApiResponse(responseCode = "400", description = "No buylist with specified identifier found"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     public ResponseEntity<BuyList> getById(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         return service.getById(id, userId).map(ResponseEntity::ok)

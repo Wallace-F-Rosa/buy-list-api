@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ingredient")
+// TODO: add swagger docs
 public class IngredientsController {
 
     @Autowired

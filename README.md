@@ -6,7 +6,7 @@ The goal of this application is to manage groceries buylists. The API provided s
 
 ## Goals
 - [x] Setup project
- - [] Swagger docs
+ - [x] Swagger docs
 - [x] Manage ingredients
 - [x] Manage buy lists
 - [x] Authentication by jwt
