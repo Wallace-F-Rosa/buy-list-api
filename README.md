@@ -12,20 +12,14 @@ The goal of this application is to manage groceries buylists. The API provided s
 - [x] Authentication by jwt
 - [x] Make buylists be visible only to users that created them
 
-Notification service
+Notification service (TODO: needs to be another repo)
 - [ ] Notify the user in date selected to use the buy list
     - [ ] email notification
     - [ ] Whatsapp notification
 
 ## Run project
-Install dependencies and compile:
-.\gradlew bootRun
-
-Generate Swagger docs:
-TODO: set command
-
-To run application:
-TODO: set command
+Install dependencies and run project locally:
+.\gradlew bootRun --args="--spring.profiles.active=local"
 
 Api is running on localhost:8080/api
 To see swagger docs go to localhost:8080/docs
