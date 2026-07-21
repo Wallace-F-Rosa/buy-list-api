@@ -1,4 +1,5 @@
 spring:
+  # TODO: switch database to something that can be deployed
   datasource:
     uri: jdbc:h2:mem:test
     driver-class-name: org.h2.Driver
@@ -14,4 +15,7 @@ spring:
         web-allow-others: true
   security:
     oauth2:
-      jwt-secret: test-secret-key-for-testing-purposes-only-1234567890
+      jwt-secret: ${SPRING_SECURITY_OAUTH2_JWT_SECRET:b8f58b1cebdb1a92ff7c13b1697520b215b4e094328345ef73c06754fe1a919f}
+  springdoc:
+    swagger-ui:
+      enabled: true
