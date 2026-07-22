@@ -21,6 +21,13 @@ TODO: create a new app to implement notification sending
     - [ ] email notification
     - [ ] Whatsapp notification
 
+## Agent guidance
+This repository now includes agent-friendly guidance files for future contributors and coding agents:
+- [AGENTS.md](AGENTS.md) for repository-wide context and working rules
+- [.github/copilot-instructions.md](.github/copilot-instructions.md) for VS Code Copilot behavior
+- [docs/architecture.md](docs/architecture.md) for the project structure and request flow
+- [docs/testing.md](docs/testing.md) for test strategy and commands
+
 ## Run project
 Install dependencies and run project locally:
 .\gradlew bootRun --args="--spring.profiles.active=local"
