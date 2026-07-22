@@ -22,3 +22,6 @@ The repository uses a mix of service-focused tests and Spring Boot integration t
 - Cover both success and failure cases, including unauthorized access.
 - Prefer asserting on real API behavior through MockMvc rather than only checking mocked collaborators.
 - Keep fixtures small and explicit.
+
+## Maintenance note
+If the test strategy, supported profiles, or endpoint behavior changes, update this file in the same change so future contributors have accurate guidance.

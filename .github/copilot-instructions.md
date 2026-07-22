@@ -15,6 +15,7 @@ This is a Spring Boot REST API for managing grocery ingredients and buy lists. T
 - When changing behavior, update or add tests under src/test/java.
 - Verify with ./gradlew test before concluding work.
 - Use the local profile for runtime checks: ./gradlew bootRun --args="--spring.profiles.active=local"
+- If you change architecture, endpoints, auth flow, or testing strategy, update the repository guidance files alongside the code change.
 
 ## Notes
 - The API exposes endpoints under /api and Swagger UI under /docs.

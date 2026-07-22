@@ -33,3 +33,6 @@ The BuyList API is a Spring Boot application for managing ingredients and user-o
 - Ingredient endpoints are available under /api/ingredient.
 - Buy list endpoints are available under /api/buylist.
 - Swagger UI is served at /docs.
+
+## Maintenance note
+When the codebase evolves, keep this document aligned with the current implementation. Any change to packages, request flow, auth behavior, persistence, or deployment profile should be reflected here.

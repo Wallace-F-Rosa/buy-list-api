@@ -33,6 +33,11 @@ This repository contains a Spring Boot 3.2.5 REST API for managing grocery ingre
 - Prefer real API-level assertions where possible.
 - Run relevant tests before finishing a change.
 
+## Documentation and architecture maintenance
+- If you change package structure, endpoints, security behavior, persistence, or runtime configuration, update the agent guidance files in the same change.
+- Keep [AGENTS.md](AGENTS.md), [.github/copilot-instructions.md](.github/copilot-instructions.md), [docs/architecture.md](docs/architecture.md), and [docs/testing.md](docs/testing.md) aligned with the current implementation.
+- When adding new features, update the docs to reflect the new flow, dependencies, and test expectations.
+
 ## Commands
 - Run the full test suite: ./gradlew test
 - Run the application locally: ./gradlew bootRun --args="--spring.profiles.active=local"
